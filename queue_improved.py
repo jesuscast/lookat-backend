@@ -118,6 +118,7 @@ class ClientCommuncation(Protocol):
 		identity, token = self.obtain_token_data()
 		self.token = token
 		self.identity = identity
+		print self.identity
 		msg = {'type':'connection_received', 'token': token, 'identity' : identity}
 		self.message(json.dumps(msg))
 	def matching(self):
@@ -149,8 +150,8 @@ class ClientCommuncation(Protocol):
 	def initialize_data(self, data_j):
 		""" After a client joins, this is the next step. Sets up basic variables of the client into redis, in order to keep track of it """
 		msgs = []
-		self.name = data_j['name']
-		for key in ['lat', 'long', 'name']:
+		self.name = self.identity #data_j['name']
+		for key in ['lat', 'long']:
 			redis_server.hset(self.name, key, data_j[key])
 		clients.append(self)
 		# Set values in its own hashm on redis
@@ -188,13 +189,13 @@ class ClientCommuncation(Protocol):
 			redis_server.hset(self.name, 'accepted', 'True')
 			matched_with_name = redis_server.hget(self.name, 'matched_with')
 			if redis_server.hget( matched_with_name , 'accepted') ==  'True':
-				msgs = [ { 'type' : 'continue_conversation', 'send_to' : self.name , 'token': redis_server.hget(self.name, 'token'), 'content': 'Nothing'}, { 'type' : 'continue_conversation', 'send_to' : matched_with_name , 'token': redis_server(matched_with_name, 'token'), 'content': 'Nothing'} ]
+				msgs = [ { 'type' : 'continue_conversation', 'send_to' : self.name , 'token': redis_server.hget(self.name, 'token'), 'content': 'Nothing'}, { 'type' : 'continue_conversation', 'send_to' : matched_with_name , 'token': redis_server.hget(matched_with_name, 'token'), 'content': 'Nothing'} ]
 		elif data_j['type'] == 'back_into_queue':
 			if redis_server.hexists('matched', self.name):
 				redis_server.hdel('matched', self.name, self.name)
-			redis_server('not_matched', self.name, self.name)
-			redis_server(self.name, 'accepted', 'False')
-			redis_server(self.name, 'matched_with', 'None')
+			redis_server.hset('not_matched', self.name, self.name)
+			redis_server.hset(self.name, 'accepted', 'False')
+			redis_server.hset(self.name, 'matched_with', 'None')
 			msgs += [ { 'type' : 'ready_to_match', 'send_to' : self.name , 'token': redis_server.hget(self.name, 'token'), 'content': 'Nothing'} ]
 		self.send_messages(msgs)
 	def send_messages(self, msgs):
