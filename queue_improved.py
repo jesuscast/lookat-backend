@@ -224,7 +224,7 @@ if __name__=="__main__":
 	reactor.listenTCP(8123, factory_tmp)
 	printc('Server began already.')
 	# Write pid file
-	os.path.basename(__file__).replace('.pyc','.py').replace('.py','.pid')
+	pid_file_name = os.path.basename(__file__).replace('.pyc','.py').replace('.py','.pid')
 	pid_file = open(pid_file_name,'w')
 	pid_file.write(str(os.getpid()))
 	pid_file.close()
