@@ -25,7 +25,7 @@ let array_to_obj = (result) => {
   return result;
 };
 // Specific functions.
-let join_client = (data_type, data_content, data_id) => {
+let join_client = (data_type, data_content, data_id, socket) => {
 	if( data_content.hasOwnProperty('lat') ){
 		let data_lat = data_content['lat'];
 		if( data_content.hasOwnProperty('long') ){
@@ -42,6 +42,8 @@ let join_client = (data_type, data_content, data_id) => {
 				.exec(function (err, results) {
 			  // results === [[null, 'OK'], [null, 'bar']]
 			  		console.log(results);
+			  		let data_to_send = {'content' : data_id, 'type' : 'ready_to_match', 'id' : data_id};
+					socket.write(JSON.stringify(data_to_send));
 			});
 		} else {
 			console.log('There is no long.');
@@ -220,7 +222,7 @@ let server = net.createServer((socket) => {
 					switch(data_type) {
 						case 'join':
 							console.log('joining?');
-							join_client(data_type, data_content, data_id);
+							join_client(data_type, data_content, data_id, socket);
 							break;
 						case 'try_to_match':
 							console.log('Hello I am the client matching');

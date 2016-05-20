@@ -25,7 +25,7 @@ var array_to_obj = function array_to_obj(result) {
 	return result;
 };
 // Specific functions.
-var join_client = function join_client(data_type, data_content, data_id) {
+var join_client = function join_client(data_type, data_content, data_id, socket) {
 	if (data_content.hasOwnProperty('lat')) {
 		var data_lat = data_content['lat'];
 		if (data_content.hasOwnProperty('long')) {
@@ -33,6 +33,8 @@ var join_client = function join_client(data_type, data_content, data_id) {
 			redis_client.multi().hset(data_id, 'lat', data_lat).hset(data_id, 'long', data_long).hset(data_id, 'name', data_id).hset(data_id, 'matched_with', 'None').hset(data_id, 'accepted', 'False').hset(data_id, 'joined', 'true').hset('clients', data_id, data_id).hset('not_matched', data_id, data_id).exec(function (err, results) {
 				// results === [[null, 'OK'], [null, 'bar']]
 				console.log(results);
+				var data_to_send = { 'content': data_id, 'type': 'ready_to_match', 'id': data_id };
+				socket.write(JSON.stringify(data_to_send));
 			});
 		} else {
 			console.log('There is no long.');
@@ -176,7 +178,7 @@ var server = net.createServer(function (socket) {
 					switch (data_type) {
 						case 'join':
 							console.log('joining?');
-							join_client(data_type, data_content, data_id);
+							join_client(data_type, data_content, data_id, socket);
 							break;
 						case 'try_to_match':
 							console.log('Hello I am the client matching');

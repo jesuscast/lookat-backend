@@ -78,6 +78,11 @@ let server = net.createServer((socket) => {
 	});
 
 	socket.on('data', (data) => {
+		console.log('I got some data');
+		console.log(data.toString());
+		console.log('Now I try to replace empty char.');
+		console.log(data.toString().replace('\n',''));
+		console.log('did I get here?');
 		let data_received = JSON.parse(data.toString().replace('\n',''));
 		console.log(data_received);
 		// Loop over the types in order to find the correct response
