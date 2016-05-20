@@ -116,8 +116,11 @@ var match_client = function match_client(data_type, data_content, data_id, socke
 	});
 };
 
-var back_into_queue = function back_into_queue(data_type, data_content, data_id) {
-	return 1;
+var back_into_queue = function back_into_queue(data_type, data_content, data_id, socket) {
+	redis_client.multi().hset(data_id, 'matched_with', 'None').hset(data_id, 'accepted', 'False').hset('clients', data_id, data_id).hset('not_matched', data_id, data_id).hdel('matched', data_id).exec(function (err, results) {
+		var data_to_send = { 'content': data_id, 'type': 'ready_to_match', 'id': data_id };
+		socket.write(JSON.stringify(data_to_send));
+	});
 };
 
 var client_accepted = function client_accepted(data_type, data_content, data_id, socket) {

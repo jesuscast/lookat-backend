@@ -141,7 +141,7 @@ let back_into_queue = (data_type, data_content, data_id, socket) => {
 		.hset('not_matched', data_id, data_id)
 		.hdel('matched', data_id)
 		.exec(function (err, results) {
-			let data_to_send = {'content' : data_id, 'type' : 'ready_to_match', 'id' : data_id;
+			let data_to_send = {'content' : data_id, 'type' : 'ready_to_match', 'id' : data_id};
 			socket.write(JSON.stringify(data_to_send));
 		});
 };
