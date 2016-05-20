@@ -42,22 +42,32 @@ var connection_made = function connection_made(tmp_guid, socket) {
 	token.addGrant(grant);
 	// Save this into the array of clients.
 	clients[tmp_guid] = { 'socket': socket, 'grant': grant, 'token': token, 'identity': tmp_guid };
+	if (clients[tmp_guid].hasOwnProperty('user_flagged')) {
+		if (parseInt(clients[tmp_guid]['user_flagged']) < 2) {
+			var data_to_send = { 'type': 'connection_received', 'token': token.toJwt(), 'identity': tmp_guid };
+			socket.write(JSON.stringify(data_to_send));
+		} else {
+			var _data_to_send = { 'type': 'you_have_been_flagged' };
+			socket.write(JSON.stringify(_data_to_send));
+		}
+	} else {
+		clients[tmp_guid]['user_flagged'] = 0..toString();
+		var _data_to_send2 = { 'type': 'connection_received', 'token': token.toJwt(), 'identity': tmp_guid };
+		socket.write(JSON.stringify(_data_to_send2));
+	};
 	// Now write back to the client with the token information.
-	var data_to_send = { 'type': 'connection_received', 'token': token.toJwt(), 'identity': tmp_guid };
-	socket.write(JSON.stringify(data_to_send));
 };
 
 // Twilio Information.
 
 var server = net.createServer(function (socket) {
-	// This happens whenever it connects for the first time.
-	var tmp_guid = guid();
-	connection_made(tmp_guid, socket);
 	// Whenever somebody disconnects
 	// Remove the client from the list when it leaves
+	var tmp_guid = '';
 	socket.on('end', function () {
 		// clients.splice(clients.indexOf(socket), 1);
-		delete clients[tmp_guid];
+		// delete clients[tmp_guid];
+		matching_client.emit('client_disconnected', tmp_guid);
 		//broadcast(socket.name + " left.\n");
 	});
 
@@ -82,11 +92,26 @@ var server = net.createServer(function (socket) {
 					break;
 				case 'back_into_queue':
 					console.log('Somebody is trying to get back into queue');
+					matching_client.emit('back_into_queue', tmp_guid, data_received);
+					break;
+				case 'uuid_received':
+					tmp_guid = data_received['content'];
+					connection_made(tmp_guid, socket);
+					break;
+				case 'flag_user':
+					clients[data_received['content']]['user_flagged'] = (parseInt(clients[data_received['content']]['user_flagged']) + 1).toString();
+					clients[data_received['content']]['socket'].write(JSON.stringify({ 'type': 'you_have_been_flagged' }));
+					if (parseInt(clients[data_received['content']]['user_flagged']) == 2) {
+						// socket.write(JSON.stringify({'type' : 'partner_disconnected', 'content' : 'Nothing'}));
+						matching_client.emit('client_disconnected', data_received['content']);
+					} else {
+						matching_client.emit('back_into_queue', tmp_guid, data_received);
+					}
 					break;
 			} // end of switch
 		}
 	});
-}).listen(8123);
+}).listen(8124);
 
 matching_client.on('data', function (data) {
 	var data_received = JSON.parse(data);
@@ -105,10 +130,19 @@ matching_client.on('data', function (data) {
 						clients[data_id]['socket'].write(JSON.stringify(data_to_send));
 						break;
 					case 'both_people_accepted':
-						var data_to_send = { 'type': 'continue_conversation', 'content': 'Nothing' };
+						data_to_send = { 'type': 'continue_conversation', 'content': 'Nothing' };
 						clients[data_id]['socket'].write(JSON.stringify(data_to_send));
 						data_to_send = { 'type': 'continue_conversation', 'content': 'Nothing' };
 						clients[data_content]['socket'].write(JSON.stringify(data_to_send));
+						break;
+					case 'partner_disconnected':
+						data_to_send = { 'type': 'partner_disconnected', 'content': 'Nothing' };
+						console.log(data_to_send);
+						clients[data_id]['socket'].write(JSON.stringify(data_to_send));
+						break;
+					case 'ready_to_match':
+						data_to_send = { 'type': 'ready_to_match' };
+						clients[data_id]['socket'].write(JSON.stringify(data_to_send));
 						break;
 					default:
 						console.log('type not identified');
@@ -140,5 +174,16 @@ matching_client.on('join', function (tmp_guid, data_received) {
 
 matching_client.on('accepted', function (tmp_guid, data_received) {
 	var data_to_send = { 'type': 'accepted', 'content': data_received, 'id': tmp_guid };
+	matching_client.write(JSON.stringify(data_to_send));
+});
+
+matching_client.on('back_into_queue', function (tmp_guid, data_received) {
+	var data_to_send = { 'type': 'back_into_queue', 'content': data_received, 'id': tmp_guid };
+	matching_client.write(JSON.stringify(data_to_send));
+});
+
+matching_client.on('client_disconnected', function (tmp_guid) {
+	console.log('wtf bro');
+	var data_to_send = { 'type': 'client_disconnected', 'content': '', 'id': tmp_guid };
 	matching_client.write(JSON.stringify(data_to_send));
 });

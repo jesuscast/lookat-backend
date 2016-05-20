@@ -134,6 +134,20 @@ var client_accepted = function client_accepted(data_type, data_content, data_id,
 	});
 	return 1;
 };
+
+var client_disconnected = function client_disconnected(data_type, data_content, data_id, socket) {
+	redis_client.multi().hget(data_id, 'matched_with').hdel(data_id, 'lat').hdel(data_id, 'long').hdel(data_id, 'name').hdel(data_id, 'matched_with').hdel(data_id, 'accepted').hdel(data_id, 'joined').hdel('clients', data_id).hdel('not_matched', data_id).hdel('matched', data_id).exec(function (err, results) {
+		if (results[0][1] != 'None') {
+			console.log('kill me: ' + results[0][1]);
+			redis_client.multi().hset(results[0][1], 'matched_with', 'None').hset(results[0][1], 'accepted', 'False').hdel('matched', results[0][1]).hset('not_matched', results[0][1], results[0][1]).exec(function (err_inner, results_inner) {
+				console.log('Reset the previous guy as well. Now time to message the other guy.');
+				var data_to_send = { 'content': results[0][1], 'type': 'partner_disconnected', 'id': results[0][1] };
+				socket.write(JSON.stringify(data_to_send));
+			});
+		}
+	});
+};
+
 var server = net.createServer(function (socket) {
 	// This happens whenever it connects for the first time.
 	console.log('I have received a connection on the secret port.');
@@ -172,6 +186,10 @@ var server = net.createServer(function (socket) {
 						case 'back_into_queue':
 							console.log('Back into queue?');
 							back_into_queue(data_type, data_content, data_id, socket);
+							break;
+						case 'client_disconnected':
+							console.log('Client disconnected');
+							client_disconnected(data_type, data_content, data_id, socket);
 							break;
 						default:
 							console.log('data type not defined');
