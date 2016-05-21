@@ -208,50 +208,66 @@ let server = net.createServer((socket) => {
 	});
 
 	socket.on('data', (data) => {
-		console.log('Received data');
-		let data_received = JSON.parse(data.toString().replace('\n',''));
-		console.log(data_received);
-		// Loop over the types in order to find the correct response
-		// I check first that the response has the three most important fields. type, content, and id.
-		if( data_received.hasOwnProperty('type') ){
-			let data_type = data_received['type'];
-			if( data_received.hasOwnProperty('content') ){
-				let data_content = data_received['content'];
-				if( data_received.hasOwnProperty('id') ){
-					let data_id = data_received['id'];
-					switch(data_type) {
-						case 'join':
-							console.log('joining?');
-							join_client(data_type, data_content, data_id, socket);
-							break;
-						case 'try_to_match':
-							console.log('Hello I am the client matching');
-							let result = match_client(data_type, data_content, data_id, socket);
-							break;
-						case 'accepted':
-							console.log('accepted?');
-							client_accepted(data_type, data_content, data_id, socket);
-							break;
-						case 'back_into_queue':
-							console.log('Back into queue?');
-							back_into_queue(data_type, data_content, data_id, socket);
-							break;
-						case 'client_disconnected':
-							console.log('Client disconnected');
-							client_disconnected(data_type, data_content, data_id, socket);
-							break;
-						default:
-							console.log('data type not defined');
-							console.log(data_type);
-					} // end of switch
-				} else {
-					console.log('Does not have id');
-				}// end of id checker
-			} else {
-				console.log(' does no have content');
-			}// end of content checkeer
+		let string_of_data = data.toString();
+		// Check if there are multiple messages bundled together.
+		let array_of_messages = []
+		if(string_of_data.indexOf('}{') != -1) {
+			array_of_messages = string_of_data.split('}{');
+			for(let i = 0; i < array_of_messages.length; i++) {
+				if(i > 0)
+					array_of_messages[i] = '{' + array_of_messages[i]
+				if(i < (array_of_messages.length - 1))
+					array_of_messages[i] += '}'
+			}
 		} else {
-			console.log('Does not have type');
-		}// end of type checker
+			array_of_messages.push(string_of_data);
+		}
+		for(let i = 0; i < array_of_messages.length; i++) {
+			console.log('Received data');
+			let data_received = JSON.parse(array_of_messages[i].replace('\n',''));
+			console.log(data_received);
+			// Loop over the types in order to find the correct response
+			// I check first that the response has the three most important fields. type, content, and id.
+			if( data_received.hasOwnProperty('type') ){
+				let data_type = data_received['type'];
+				if( data_received.hasOwnProperty('content') ){
+					let data_content = data_received['content'];
+					if( data_received.hasOwnProperty('id') ){
+						let data_id = data_received['id'];
+						switch(data_type) {
+							case 'join':
+								console.log('joining?');
+								join_client(data_type, data_content, data_id, socket);
+								break;
+							case 'try_to_match':
+								console.log('Hello I am the client matching');
+								let result = match_client(data_type, data_content, data_id, socket);
+								break;
+							case 'accepted':
+								console.log('accepted?');
+								client_accepted(data_type, data_content, data_id, socket);
+								break;
+							case 'back_into_queue':
+								console.log('Back into queue?');
+								back_into_queue(data_type, data_content, data_id, socket);
+								break;
+							case 'client_disconnected':
+								console.log('Client disconnected');
+								client_disconnected(data_type, data_content, data_id, socket);
+								break;
+							default:
+								console.log('data type not defined');
+								console.log(data_type);
+						} // end of switch
+					} else {
+						console.log('Does not have id');
+					}// end of id checker
+				} else {
+					console.log(' does no have content');
+				}// end of content checkeer
+			} else {
+				console.log('Does not have type');
+			}// end of type checker
+		}
 	}); // end of receive data checker.
 }).listen(8125);

@@ -70,6 +70,7 @@ let server = net.createServer((socket) => {
 	// Whenever somebody disconnects
 	// Remove the client from the list when it leaves
 	let tmp_guid = '';
+	let joined_already = false;
 	socket.on('end', () => {
 		// clients.splice(clients.indexOf(socket), 1);
 		// delete clients[tmp_guid];
@@ -102,26 +103,34 @@ let server = net.createServer((socket) => {
 				let data_type = data_received['type'];
 				switch(data_type) {
 					case 'join':
-						console.log('Sombody is trying to join');
-						matching_client.emit('join', tmp_guid, data_received);
+						if(! joined_already) {
+							console.log('join from: '+tmp_guid);
+							matching_client.emit('join', tmp_guid, data_received);
+							joined_already = true;
+						}
+						else {
+							console.log('NOT ACCEPTED from: '+tmp_guid);
+						}
 						break;
 					case 'try_to_match':
-						console.log('Sombody is trying to match');
+						console.log('try_to_match from: '+tmp_guid);
 						matching_client.emit('try_to_match', tmp_guid, data_received);
 						break
 					case 'accepted':
-						console.log('Sombody accepted');
+						console.log('accepted from: '+tmp_guid);
 						matching_client.emit('accepted', tmp_guid, data_received);
 						break;
 					case 'back_into_queue':
-						console.log('Somebody is trying to get back into queue');
+						console.log('back_into_queue from: '+tmp_guid);
 						matching_client.emit('back_into_queue', tmp_guid, data_received);
 						break;
 					case 'uuid_received':
 						tmp_guid = data_received['content'];
+						console.log('uuid_received from: '+tmp_guid);
 						connection_made(tmp_guid, socket);
 						break;
 					case 'flag_user':
+						console.log('flag_user from: '+tmp_guid);
 						clients[data_received['content']]['user_flagged'] = (parseInt(clients[data_received['content']]['user_flagged'])+1).toString();
 						clients[data_received['content']]['socket'].write(JSON.stringify({'type': 'you_have_been_flagged'}));
 						if(parseInt(clients[data_received['content']]['user_flagged']) == 2){
