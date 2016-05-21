@@ -78,49 +78,62 @@ let server = net.createServer((socket) => {
 	});
 
 	socket.on('data', (data) => {
+		let string_of_data = data.toString();
 		console.log('I got some data');
-		console.log(data.toString());
-		console.log('Now I try to replace empty char.');
-		console.log(data.toString().replace('\n',''));
-		console.log('did I get here?');
-		let data_received = JSON.parse(data.toString().replace('\n',''));
-		console.log(data_received);
-		// Loop over the types in order to find the correct response
-		if( data_received.hasOwnProperty('type') ){
-			let data_type = data_received['type'];
-			switch(data_type) {
-				case 'join':
-					console.log('Sombody is trying to join');
-					matching_client.emit('join', tmp_guid, data_received);
-					break;
-				case 'try_to_match':
-					console.log('Sombody is trying to match');
-					matching_client.emit('try_to_match', tmp_guid, data_received);
-					break
-				case 'accepted':
-					console.log('Sombody accepted');
-					matching_client.emit('accepted', tmp_guid, data_received);
-					break;
-				case 'back_into_queue':
-					console.log('Somebody is trying to get back into queue');
-					matching_client.emit('back_into_queue', tmp_guid, data_received);
-					break;
-				case 'uuid_received':
-					tmp_guid = data_received['content'];
-					connection_made(tmp_guid, socket);
-					break;
-				case 'flag_user':
-					clients[data_received['content']]['user_flagged'] = (parseInt(clients[data_received['content']]['user_flagged'])+1).toString();
-					clients[data_received['content']]['socket'].write(JSON.stringify({'type': 'you_have_been_flagged'}));
-					if(parseInt(clients[data_received['content']]['user_flagged']) == 2){
-						// socket.write(JSON.stringify({'type' : 'partner_disconnected', 'content' : 'Nothing'}));
-						matching_client.emit('client_disconnected', data_received['content']);
-					} else {
-						matching_client.emit('back_into_queue', tmp_guid, data_received);
-					}
-					break;
-			} // end of switch
+		// Check if there are multiple messages bundled together.
+		let array_of_messages = []
+		if(string_of_data.indexOf('}{') != -1) {
+			array_of_messages = string_of_data.split('}{');
+			for(let i = 0; i < array_of_messages.length; i++) {
+				if(i > 0)
+					array_of_messages[i] = '{' + array_of_messages[i]
+				if(i < (array_of_messages.length - 1))
+					array_of_messages[i] += '}'
+			}
+		} else {
+			array_of_messages.push(string_of_data);
 		}
+		for(let i = 0; i < array_of_messages.length; i++) {
+			console.log('Now I try to replace empty char.');
+			let data_received = JSON.parse(array_of_messages[i].replace('\n',''));
+			console.log('did I get here?');
+			// Loop over the types in order to find the correct response
+			if( data_received.hasOwnProperty('type') ){
+				let data_type = data_received['type'];
+				switch(data_type) {
+					case 'join':
+						console.log('Sombody is trying to join');
+						matching_client.emit('join', tmp_guid, data_received);
+						break;
+					case 'try_to_match':
+						console.log('Sombody is trying to match');
+						matching_client.emit('try_to_match', tmp_guid, data_received);
+						break
+					case 'accepted':
+						console.log('Sombody accepted');
+						matching_client.emit('accepted', tmp_guid, data_received);
+						break;
+					case 'back_into_queue':
+						console.log('Somebody is trying to get back into queue');
+						matching_client.emit('back_into_queue', tmp_guid, data_received);
+						break;
+					case 'uuid_received':
+						tmp_guid = data_received['content'];
+						connection_made(tmp_guid, socket);
+						break;
+					case 'flag_user':
+						clients[data_received['content']]['user_flagged'] = (parseInt(clients[data_received['content']]['user_flagged'])+1).toString();
+						clients[data_received['content']]['socket'].write(JSON.stringify({'type': 'you_have_been_flagged'}));
+						if(parseInt(clients[data_received['content']]['user_flagged']) == 2){
+							// socket.write(JSON.stringify({'type' : 'partner_disconnected', 'content' : 'Nothing'}));
+							matching_client.emit('client_disconnected', data_received['content']);
+						} else {
+							matching_client.emit('back_into_queue', tmp_guid, data_received);
+						}
+						break;
+				} // end of switch
+			} //end of if
+		} // end of for
 	});
 }).listen(8124);
 
