@@ -132,8 +132,8 @@ let server = net.createServer((socket) => {
 					case 'flag_user':
 						console.log('flag_user from: '+tmp_guid);
 						clients[data_received['content']]['user_flagged'] = (parseInt(clients[data_received['content']]['user_flagged'])+1).toString();
-						clients[data_received['content']]['socket'].write(JSON.stringify({'type': 'you_have_been_flagged'}));
-						if(parseInt(clients[data_received['content']]['user_flagged']) == 2){
+						//clients[data_received['content']]['socket'].write(JSON.stringify({'type': 'you_have_been_flagged'}));
+						if(parseInt(clients[data_received['content']]['user_flagged']) == 1){
 							// socket.write(JSON.stringify({'type' : 'partner_disconnected', 'content' : 'Nothing'}));
 							matching_client.emit('client_disconnected', data_received['content']);
 						} else {
