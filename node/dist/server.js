@@ -100,10 +100,12 @@ var server = net.createServer(function (socket) {
 					matching_client.emit('back_into_queue', tmp_guid, data_received);
 					break;
 				case 'uuid_received':
+					console.log('Now I have a uuid');
 					tmp_guid = data_received['content'];
 					connection_made(tmp_guid, socket);
 					break;
 				case 'flag_user':
+					console.log('I am trying to flag somebody');
 					clients[data_received['content']]['user_flagged'] = (parseInt(clients[data_received['content']]['user_flagged']) + 1).toString();
 					clients[data_received['content']]['socket'].write(JSON.stringify({ 'type': 'you_have_been_flagged' }));
 					if (parseInt(clients[data_received['content']]['user_flagged']) == 2) {
