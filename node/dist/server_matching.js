@@ -177,9 +177,7 @@ var server = net.createServer(function (socket) {
 			array_of_messages.push(string_of_data);
 		}
 		for (var _i3 = 0; _i3 < array_of_messages.length; _i3++) {
-			console.log('Received data');
 			var data_received = JSON.parse(array_of_messages[_i3].replace('\n', ''));
-			console.log(data_received);
 			// Loop over the types in order to find the correct response
 			// I check first that the response has the three most important fields. type, content, and id.
 			if (data_received.hasOwnProperty('type')) {
@@ -190,27 +188,27 @@ var server = net.createServer(function (socket) {
 						var data_id = data_received['id'];
 						switch (data_type) {
 							case 'join':
-								console.log('joining?');
+								console.log('join from: ' + data_id);
 								join_client(data_type, data_content, data_id, socket);
 								break;
 							case 'try_to_match':
-								console.log('Hello I am the client matching');
+								console.log('try_to_match from: ' + data_id);
 								var result = match_client(data_type, data_content, data_id, socket);
 								break;
 							case 'accepted':
-								console.log('accepted?');
+								console.log('accepted from: ' + data_id);
 								client_accepted(data_type, data_content, data_id, socket);
 								break;
 							case 'back_into_queue':
-								console.log('Back into queue?');
+								console.log('back_into_queue from: ' + data_id);
 								back_into_queue(data_type, data_content, data_id, socket);
 								break;
 							case 'client_disconnected':
-								console.log('Client disconnected');
+								console.log('client disconnected: ' + data_id);
 								client_disconnected(data_type, data_content, data_id, socket);
 								break;
 							default:
-								console.log('data type not defined');
+								console.log('data type not defined: ' + data_id);
 								console.log(data_type);
 						} // end of switch
 					} else {

@@ -87,9 +87,7 @@ var server = net.createServer(function (socket) {
 			array_of_messages.push(string_of_data);
 		}
 		for (var _i = 0; _i < array_of_messages.length; _i++) {
-			console.log('Now I try to replace empty char.');
 			var data_received = JSON.parse(array_of_messages[_i].replace('\n', ''));
-			console.log('did I get here?');
 			// Loop over the types in order to find the correct response
 			if (data_received.hasOwnProperty('type')) {
 				var data_type = data_received['type'];
@@ -148,12 +146,13 @@ matching_client.on('data', function (data) {
 				var data_id = data_received['id'];
 				switch (data_type) {
 					case 'matched_with':
-						console.log('I got somebody that I matched with');
+						console.log('MATCHING: matched done for: ' + data_id);
 						// From python: msg_first = {'type':'matched', 'content' : matched_with.name, 'token': redis_server.hget(current_client.name, 'token'), 'send_to' : current_client.name, 'role' : 'send_invite'};
 						data_to_send = { 'type': 'matched', 'content': data_content, 'role': 'send_invite' };
 						clients[data_id]['socket'].write(JSON.stringify(data_to_send));
 						break;
 					case 'both_people_accepted':
+						console.log('MATCHING: both_people_accepted for: ' + data_id);
 						data_to_send = { 'type': 'continue_conversation', 'content': 'Nothing' };
 						clients[data_id]['socket'].write(JSON.stringify(data_to_send));
 						data_to_send = { 'type': 'continue_conversation', 'content': 'Nothing' };
@@ -161,15 +160,15 @@ matching_client.on('data', function (data) {
 						break;
 					case 'partner_disconnected':
 						data_to_send = { 'type': 'partner_disconnected', 'content': 'Nothing' };
-						console.log(data_to_send);
 						clients[data_id]['socket'].write(JSON.stringify(data_to_send));
 						break;
 					case 'ready_to_match':
+						console.log('MATCHING: ready_to_match for: ' + data_id);
 						data_to_send = { 'type': 'ready_to_match' };
 						clients[data_id]['socket'].write(JSON.stringify(data_to_send));
 						break;
 					default:
-						console.log('type not identified');
+						console.log('MATCHING: type not identified');
 						console.log(data_type);
 				} // end of switch
 			} else {
@@ -207,7 +206,7 @@ matching_client.on('back_into_queue', function (tmp_guid, data_received) {
 });
 
 matching_client.on('client_disconnected', function (tmp_guid) {
-	console.log('wtf bro');
+	console.log(tmp_guid + ' Disconnected');
 	var data_to_send = { 'type': 'client_disconnected', 'content': '', 'id': tmp_guid };
 	matching_client.write(JSON.stringify(data_to_send));
 });
