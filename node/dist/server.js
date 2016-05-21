@@ -124,7 +124,7 @@ var server = net.createServer(function (socket) {
 						}
 						break;
 				} // end of switch
-			}
+			} //end of if
 		} // end of for
 	});
 }).listen(8124);
