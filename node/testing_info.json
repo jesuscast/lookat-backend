@@ -1,4 +1,6 @@
 {"lat": 2, "type": "join", "long": 3}
 {"type": "try_to_match"}
-
+{"type": "uuid_received", "content":"uniqueid"}
 {"type": "accepted"}
+
+{"lat": 2.23, "type": "join", "long": 3.5}

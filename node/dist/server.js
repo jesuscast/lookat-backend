@@ -74,7 +74,6 @@ var server = net.createServer(function (socket) {
 
 	socket.on('data', function (data) {
 		var string_of_data = data.toString();
-		console.log('I got some data');
 		// Check if there are multiple messages bundled together.
 		var array_of_messages = [];
 		if (string_of_data.indexOf('}{') != -1) {

@@ -12,6 +12,8 @@ MarkupSafe==0.23
 python-dateutil==2.5.3
 pytz==2016.4
 redis==2.10.5
+requests==2.10.0
+selenium==2.53.2
 singledispatch==3.4.0.3
 six==1.10.0
 tornado==4.3

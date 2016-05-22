@@ -80,7 +80,6 @@ let server = net.createServer((socket) => {
 
 	socket.on('data', (data) => {
 		let string_of_data = data.toString();
-		console.log('I got some data');
 		// Check if there are multiple messages bundled together.
 		let array_of_messages = []
 		if(string_of_data.indexOf('}{') != -1) {
