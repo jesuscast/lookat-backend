@@ -19,8 +19,8 @@ function encode_utf8(s) {
 
 io.on('connection', function(socket){
 	console.log('a user connected');
-
-	const server_connection = net.connect({port: 8124}, () => {
+	// 104.236.141.41 is my digitalocean server.
+	const server_connection = net.connect({port: 8124, host: '104.236.141.41'}, () => {
 		// 'connect' listener
 		console.log('connected to server using this particular user.!');
 	});

@@ -74,7 +74,8 @@ var match_client = function match_client(data_type, data_content, data_id, socke
 				var long_tmp = parseInt(results_inner[_i + 1][1]);
 				var dist_tmp = distance_calculator(current_lat, current_long, lat_tmp, long_tmp);
 				if (Number.isNaN(dist_tmp)) {
-					distances.push(0.0);
+					// distances.push(0.0);
+					console.log('Invalid distance');
 				} else {
 					distances.push(dist_tmp);
 				}
