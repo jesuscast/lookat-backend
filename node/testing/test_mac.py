@@ -5,7 +5,7 @@ from pyvirtualdisplay import Display
 # Utilities
 import os
 import time
-
+import sys
 testing = False
 
 if not testing:
@@ -26,4 +26,7 @@ driver = webdriver.Chrome(chrome_options=chrome_options)
 driver.get(initial_url)
 
 while True:
+	print 'Still alive'
+	print time.ctime()
+	sys.stdout.flush()
 	time.sleep(60)
