@@ -66,6 +66,18 @@ var try_to_match = function try_to_match() {
 	});
 };
 
+var accept = function accept() {
+	send_message("accepted", {
+		"type": "accepted"
+	});
+};
+
+var back_into_queue = function back_into_queue() {
+	send_message("back_into_queue", {
+		"type": "back_into_queue"
+	});
+};
+
 var connect_to_twilio = function connect_to_twilio() {
 	var accessManager = new Twilio.AccessManager(token);
 	conversationsClient = new Twilio.Conversations.Client(accessManager);
@@ -85,12 +97,13 @@ var clientConnected = function clientConnected() {
 	});
 };
 
-var conversationStarted = function conversationStarted(conversation) {
-	console.log('I am in a conversation.');
-};
+// let conversationStarted = (conversation) => {
+// 	console.log('I am in a conversation.')
+// };
 
-function conversationStarted(conversation) {
-	log('In an active Conversation');
+var conversationStarted = function conversationStarted(conversation) {
+	console.log('In an active Conversation');
+	accept();
 	activeConversation = conversation;
 	// Draw local video, if not already previewing
 	if (!previewMedia) {
@@ -99,23 +112,24 @@ function conversationStarted(conversation) {
 
 	// When a participant joins, draw their video on screen
 	conversation.on('participantConnected', function (participant) {
-		log("Participant '" + participant.identity + "' connected");
-		participant.media.attach('#remote-media');
+		console.log("Participant '" + participant.identity + "' connected");
+		// participant.media.attach('#remote-media');
 	});
 
 	// When a participant disconnects, note in log
 	conversation.on('participantDisconnected', function (participant) {
-		log("Participant '" + participant.identity + "' disconnected");
+		console.log("Participant '" + participant.identity + "' disconnected");
 	});
 
 	// When the conversation ends, stop capturing local video
 	conversation.on('disconnected', function (conversation) {
-		log("Connected to Twilio. Listening for incoming Invites as '" + conversationsClient.identity + "'");
+		console.log("Connected to Twilio. Listening for incoming Invites as '" + conversationsClient.identity + "'");
 		conversation.localMedia.stop();
 		conversation.disconnect();
 		activeConversation = null;
+		back_into_queue();
 	});
-}
+};
 
 // Handlers for data received from the server.
 socket.on("connection_received", function (data) {
@@ -167,4 +181,7 @@ if (!previewMedia) {
 		console.log('Unable to access Camera and Microphone');
 	});
 };
-// send_guid();
+
+send_guid();
+setTimeout(connect_to_twilio, 1000);
+setTimeout(join_chat, 1500);

@@ -43,6 +43,18 @@ io.on('connection', function(socket){
 		server_connection.write(data);
 	});
 
+	socket.on("accepted", (data)=>{
+		console.log("acceptedl");
+		console.log(data);
+		server_connection.write(data);
+	});
+
+	socket.on("back_into_queue", (data)=>{
+		console.log("back_into_queue");
+		console.log(data);
+		server_connection.write(data);
+	});
+
 	server_connection.on("data", (data) => {
 		let string_of_data = data.toString();
 		// Check if there are multiple messages bundled together.
