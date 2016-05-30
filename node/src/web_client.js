@@ -130,6 +130,7 @@ let conversationStarted = (conversation) => {
 
     // When a participant disconnects, note in log
     conversation.on('participantDisconnected', function (participant) {
+    	back_into_queue()
         console.log("Participant '" + participant.identity + "' disconnected");
     });
 
@@ -163,10 +164,6 @@ socket.on("matched", (data) => {
 		if(data_received.hasOwnProperty('content')) {
 			if(data_received.hasOwnProperty('role')) {
 				if(data_received['role'] == 'send_invite'){
-				    if (activeConversation) {
-					    // Add a participant
-					    activeConversation.invite(data_received['content']);
-				    } else {
 					    // Create a conversation
 					    let options = {};
 					    if (previewMedia) {
@@ -176,7 +173,6 @@ socket.on("matched", (data) => {
 					        console.log('Unable to create conversation');
 					        console.error('Unable to create conversation', error);
 					    });
-					} // end trying to make conversation
 				} //end send invite
 			} // end there is a role
 		} // end there is content

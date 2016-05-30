@@ -118,6 +118,7 @@ var conversationStarted = function conversationStarted(conversation) {
 
 	// When a participant disconnects, note in log
 	conversation.on('participantDisconnected', function (participant) {
+		back_into_queue();
 		console.log("Participant '" + participant.identity + "' disconnected");
 	});
 
@@ -151,20 +152,15 @@ socket.on("matched", function (data) {
 		if (data_received.hasOwnProperty('content')) {
 			if (data_received.hasOwnProperty('role')) {
 				if (data_received['role'] == 'send_invite') {
-					if (activeConversation) {
-						// Add a participant
-						activeConversation.invite(data_received['content']);
-					} else {
-						// Create a conversation
-						var options = {};
-						if (previewMedia) {
-							options.localMedia = previewMedia;
-						}
-						conversationsClient.inviteToConversation(data_received['content'], options).then(conversationStarted, function (error) {
-							console.log('Unable to create conversation');
-							console.error('Unable to create conversation', error);
-						});
-					} // end trying to make conversation
+					// Create a conversation
+					var options = {};
+					if (previewMedia) {
+						options.localMedia = previewMedia;
+					}
+					conversationsClient.inviteToConversation(data_received['content'], options).then(conversationStarted, function (error) {
+						console.log('Unable to create conversation');
+						console.error('Unable to create conversation', error);
+					});
 				} //end send invite
 			} // end there is a role
 		} // end there is content
