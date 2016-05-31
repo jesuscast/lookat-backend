@@ -2,7 +2,30 @@
 
 // Requirements.
 var net = require("net");
+var Redis = require('ioredis');
+var redis_client = new Redis();
+/*
 
+First message
+
+{"type": "uuid_received", "content": "asdasd"}
+
+Second Message
+
+{"lat": 2, "type": "join", "long": 3}
+
+Third Message:
+{"type": "try_to_match"}
+
+Fourth Message #1:
+{"type": "accepted", "id": }
+*/
+var send_msg = function send_msg(msg) {
+	redis_client.multi().rpush("messages", JSON.stringify(msg)).exec(function (err, results) {
+		// results === [[null, 'OK'], [null, 'bar']]
+		console.log(results);
+	});
+};
 // Global variable containing all the clients.
 var clients = {};
 
@@ -23,12 +46,6 @@ var guid = function guid() {
 	};
 	return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 };
-
-// Matching client that talks to the other process.
-var matching_client = net.connect({ port: 8125 }, function () {
-	// 'connect' listener
-	console.log('connected to server!');
-});
 
 var connection_made = function connection_made(tmp_guid, socket) {
 	// Create the token
@@ -66,10 +83,8 @@ var server = net.createServer(function (socket) {
 	var tmp_guid = '';
 	var joined_already = false;
 	socket.on('end', function () {
-		// clients.splice(clients.indexOf(socket), 1);
-		// delete clients[tmp_guid];
-		matching_client.emit('client_disconnected', tmp_guid);
-		//broadcast(socket.name + " left.\n");
+		delete clients[tmp_guid];
+		send_msg({ 'type': 'disconnected', 'id': tmp_guid });
 	});
 
 	socket.on('data', function (data) {
@@ -91,10 +106,18 @@ var server = net.createServer(function (socket) {
 			if (data_received.hasOwnProperty('type')) {
 				var data_type = data_received['type'];
 				switch (data_type) {
+					case 'uuid_received':
+						tmp_guid = data_received['content'];
+						console.log('uuid_received from: ' + tmp_guid);
+						connection_made(tmp_guid, socket);
+						break;
 					case 'join':
+						/*
+      	Join expects the coordinates already sent in the body
+      */
 						if (!joined_already) {
 							console.log('join from: ' + tmp_guid);
-							matching_client.emit('join', tmp_guid, data_received);
+							send_msg({ 'type': 'join', 'id': tmp_guid, 'lat': data_received['lat'], 'long': data_received['long'] });
 							joined_already = true;
 						} else {
 							console.log('NOT ACCEPTED from: ' + tmp_guid);
@@ -102,110 +125,27 @@ var server = net.createServer(function (socket) {
 						break;
 					case 'try_to_match':
 						console.log('try_to_match from: ' + tmp_guid);
-						matching_client.emit('try_to_match', tmp_guid, data_received);
+						send_msg({ 'type': 'try_to_match', 'id': tmp_guid });
+						// matching_client.emit('try_to_match', tmp_guid, data_received);
 						break;
 					case 'accepted':
 						console.log('accepted from: ' + tmp_guid);
-						matching_client.emit('accepted', tmp_guid, data_received);
+						send_msg({ 'type': 'accepted', 'id': tmp_guid });
+						// matching_client.emit('accepted', tmp_guid, data_received);
 						break;
-					case 'back_into_queue':
-						console.log('back_into_queue from: ' + tmp_guid);
-						matching_client.emit('back_into_queue', tmp_guid, data_received);
-						break;
-					case 'uuid_received':
-						tmp_guid = data_received['content'];
-						console.log('uuid_received from: ' + tmp_guid);
-						connection_made(tmp_guid, socket);
+					case 'both_accepted':
+						console.log('MASTER PYTHON AS SAID SOMETHING TO ME ABOUT ACCEPTED');
+						clients[data_received['person_a']]['socket'].write(JSON.stringify({ 'type': 'both_accepted' }));
+						clients[data_received['person_b']]['socket'].write(JSON.stringify({ 'type': 'both_accepted' }));
+					// break;
+					case 'matched_with':
+						console.log('MASTER PYTHON AS SAID SOMETHING TO ME');
+						clients[data_received['person_a']]['socket'].write(JSON.stringify({ 'type': 'matched_with', 'content': data_received['person_b'] }));
 						break;
 					case 'flag_user':
-						console.log('flag_user from: ' + tmp_guid);
-						clients[data_received['content']]['user_flagged'] = (parseInt(clients[data_received['content']]['user_flagged']) + 1).toString();
-						//clients[data_received['content']]['socket'].write(JSON.stringify({'type': 'you_have_been_flagged'}));
-						if (parseInt(clients[data_received['content']]['user_flagged']) == 1) {
-							// socket.write(JSON.stringify({'type' : 'partner_disconnected', 'content' : 'Nothing'}));
-							matching_client.emit('client_disconnected', data_received['content']);
-						} else {
-							matching_client.emit('back_into_queue', tmp_guid, data_received);
-						}
 						break;
 				} // end of switch
 			} //end of if
 		} // end of for
 	});
 }).listen(8124);
-
-matching_client.on('data', function (data) {
-	var data_received = JSON.parse(data);
-	var data_to_send = {};
-	if (data_received.hasOwnProperty('type')) {
-		var data_type = data_received['type'];
-		if (data_received.hasOwnProperty('content')) {
-			var data_content = data_received['content'];
-			if (data_received.hasOwnProperty('id')) {
-				var data_id = data_received['id'];
-				switch (data_type) {
-					case 'matched_with':
-						console.log('MATCHING: matched done for: ' + data_id);
-						// From python: msg_first = {'type':'matched', 'content' : matched_with.name, 'token': redis_server.hget(current_client.name, 'token'), 'send_to' : current_client.name, 'role' : 'send_invite'};
-						data_to_send = { 'type': 'matched', 'content': data_content, 'role': 'send_invite' };
-						clients[data_id]['socket'].write(JSON.stringify(data_to_send));
-						break;
-					case 'both_people_accepted':
-						console.log('MATCHING: both_people_accepted for: ' + data_id);
-						data_to_send = { 'type': 'continue_conversation', 'content': 'Nothing' };
-						clients[data_id]['socket'].write(JSON.stringify(data_to_send));
-						data_to_send = { 'type': 'continue_conversation', 'content': 'Nothing' };
-						clients[data_content]['socket'].write(JSON.stringify(data_to_send));
-						break;
-					case 'partner_disconnected':
-						data_to_send = { 'type': 'partner_disconnected', 'content': 'Nothing' };
-						clients[data_id]['socket'].write(JSON.stringify(data_to_send));
-						break;
-					case 'ready_to_match':
-						console.log('MATCHING: ready_to_match for: ' + data_id);
-						data_to_send = { 'type': 'ready_to_match' };
-						clients[data_id]['socket'].write(JSON.stringify(data_to_send));
-						break;
-					default:
-						console.log('MATCHING: type not identified');
-						console.log(data_type);
-				} // end of switch
-			} else {
-					console.log('no id');
-				} // end id
-		} else {
-				console.log(' no content');
-			} // end content
-	} else {
-			console.log('no type');
-		} // end type
-});
-
-matching_client.on('end', function () {
-	console.log('disconnected from server');
-});
-matching_client.on('try_to_match', function (tmp_guid, data_received) {
-	var data_to_send = { 'type': 'try_to_match', 'content': data_received, 'id': tmp_guid };
-	matching_client.write(JSON.stringify(data_to_send));
-});
-
-matching_client.on('join', function (tmp_guid, data_received) {
-	var data_to_send = { 'type': 'join', 'content': data_received, 'id': tmp_guid };
-	matching_client.write(JSON.stringify(data_to_send));
-});
-
-matching_client.on('accepted', function (tmp_guid, data_received) {
-	var data_to_send = { 'type': 'accepted', 'content': data_received, 'id': tmp_guid };
-	matching_client.write(JSON.stringify(data_to_send));
-});
-
-matching_client.on('back_into_queue', function (tmp_guid, data_received) {
-	var data_to_send = { 'type': 'back_into_queue', 'content': data_received, 'id': tmp_guid };
-	matching_client.write(JSON.stringify(data_to_send));
-});
-
-matching_client.on('client_disconnected', function (tmp_guid) {
-	console.log(tmp_guid + ' Disconnected');
-	var data_to_send = { 'type': 'client_disconnected', 'content': '', 'id': tmp_guid };
-	matching_client.write(JSON.stringify(data_to_send));
-});
