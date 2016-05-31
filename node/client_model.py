@@ -76,7 +76,9 @@ class Client:
 			sock.sendall({'type': 'connection_not_accepted', 'content': self.id})
 			return True
 		for index, client in enumerate(clients):
+			print client
 			if (client.id == self.id) or (client.matched_with != None) or (not client.connected) or (not client.ready_to_match):
+				print "I had to continue"
 				continue
 			distances_and_ids.append((client.distance_from( self.lat, self.long ), index))
 		distances_and_ids = sorted(distances_and_ids, key=lambda distance: distance[0])
@@ -108,6 +110,9 @@ class Client:
 		else:
 			print 'Base client was not matched with anybody or one or the other was not connected'
 		return True
+	def __str__(self):
+		result = self.id+' | accepted: '+str(self.accepted)+' | ready_to_match: '+str(self.ready_to_match)
+		return result
 
 
 if __name__=="__main__":
