@@ -40,6 +40,7 @@ class Client:
 		self.matched_with = None
 		self.connected = True
 		self.accepted = True
+		self.flags_number = 0
 		self.state = 'connected'
 	def distance_from(self, lat_2, long_2):
 		return vincenty((self.lat, self.long), (lat_2, long_2)).miles
@@ -69,6 +70,8 @@ def execute_message(message):
 			for client in clients:
 				if message['id'] == client.id:
 					base_client = client
+			if base_client.flags_number > 2:
+				sock.sendall({'type': 'connection_not_accepted', 'content': base_client.id})
 			if base_client:
 				for index, client in enumerate(clients):
 					if client.id == message['id']:
@@ -124,6 +127,24 @@ def execute_message(message):
 				print 'Correctly eliminated '+base_client.id+' from existance'
 			else:
 				print 'Did not found anybody with this name'
+		elif message['type'] == 'flag_other_user':
+			base_client = None
+			for client in clients:
+				if message['id'] == client.id:
+					base_client = client
+			if base_client:
+				if base_client.matched_with and base_client.matched_with.connected and base_client.connected:
+					matched_with_id = base_client.matched_with.id
+					base_client.matched_with.flags_number += 1
+					base_client.matched_with.matched_with = None
+					base_client.matched_with.accepted = False
+					base_client.matched_with = None
+					base_client.accepted = False
+					sock.sendall(json.dumps({'type': 'send_both_back_into_matching', 'person_a': base_client.id, 'person_b': matched_with_id}))
+				else:
+					print 'Base client was not matched with anybody or one or the other was not connected'
+			else:
+				print 'Base client not found'
 
 while True:
 	message = redis_server.rpop("messages")

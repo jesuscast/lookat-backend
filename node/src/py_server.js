@@ -17,6 +17,9 @@ Third Message:
 
 Fourth Message #1:
 {"type": "accepted", "id": }
+
+
+In case that the conversation from twilio  is lost. the person should try to get back into matching.
 */
 let send_msg = (msg) => {
 	redis_client.multi()
@@ -66,19 +69,6 @@ let connection_made = (tmp_guid, socket) => {
     token.addGrant(grant);
     // Save this into the array of clients.
     clients[tmp_guid] = {'socket':socket, 'grant':grant,'token':token, 'identity' : tmp_guid};
-    if(clients[tmp_guid].hasOwnProperty('user_flagged')) {
-    	if(parseInt(clients[tmp_guid]['user_flagged']) < 2){
-    		let data_to_send = {'type': 'connection_received', 'token' : token.toJwt(), 'identity' : tmp_guid};
-			socket.write(JSON.stringify(data_to_send));
-    	} else {
-    		let data_to_send = {'type': 'you_have_been_flagged'};
-			socket.write(JSON.stringify(data_to_send));
-    	}
-    } else {
-    	clients[tmp_guid]['user_flagged'] = (0).toString();
-    	let data_to_send = {'type': 'connection_received', 'token' : token.toJwt(), 'identity' : tmp_guid};
-		socket.write(JSON.stringify(data_to_send));
-    };
     // Now write back to the client with the token information.
 };
 
@@ -149,10 +139,18 @@ let server = net.createServer((socket) => {
 						clients[data_received['person_b']]['socket'].write(JSON.stringify({'type':'both_accepted'}));
 						// break;
 					case 'matched_with':
-						console.log('MASTER PYTHON AS SAID SOMETHING TO ME');
+						console.log('MASTER PYTHON HAS SAID SOMETHING TO ME');
 						clients[data_received['person_a']]['socket'].write(JSON.stringify({'type':'matched_with', 'content': data_received['person_b']}));
 						break;
-					case 'flag_user':
+					case 'connection_not_accepted':
+						console.log('MASTER PYTHON HAS SAID SOMETHING TO ME');
+						// this happens if the user has two flags or more.
+						clients[data_received['id']]['socket'].write(JSON.stringify({'type': 'connection_not_accepted', 'content': 'You have been flagged two times or more.'}));
+					case 'send_both_back_into_matching':
+						console.log('MASTER PYTHON HAS SAID SOMETHING TO ME');
+						clients[data_received['person_a']]['socket'].write(JSON.stringify({'type':'close_conversation','content': 'You just matched the other person.'}));
+					case 'flag_other_user':
+						send_msg({'type' : 'flag_other_user', 'id':tmp_guid});
 						break;
 				} // end of switch
 			} //end of if
