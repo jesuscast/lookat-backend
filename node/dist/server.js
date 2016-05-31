@@ -95,7 +95,7 @@ var server = net.createServer(function (socket) {
 						if (!joined_already) {
 							console.log('join from: ' + tmp_guid);
 							matching_client.emit('join', tmp_guid, data_received);
-							joined_already = true;
+							// joined_already = true;
 						} else {
 							console.log('NOT ACCEPTED from: ' + tmp_guid);
 						}
