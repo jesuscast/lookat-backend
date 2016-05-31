@@ -70,6 +70,8 @@ let connection_made = (tmp_guid, socket) => {
     // Save this into the array of clients.
     clients[tmp_guid] = {'socket':socket, 'grant':grant,'token':token, 'identity' : tmp_guid};
     // Now write back to the client with the token information.
+    let data_to_send = {'type': 'connection_received', 'token' : token.toJwt(), 'identity' : tmp_guid};
+	socket.write(JSON.stringify(data_to_send));
 };
 
 // Twilio Information.
