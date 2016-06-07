@@ -38,6 +38,7 @@ def execute_message(message):
 	"""
 	if 'type' in message and 'id' in message:
 		# First of all I need to check if the client is tyring to joing for the first time.
+		print message
 		if message['type'] == 'join':
 			join = True
 			for client in clients:
@@ -54,6 +55,8 @@ def execute_message(message):
 			if message['id'] == client.id:
 				base_client = client
 		if message['id'].replace(' ','') == 'MASTER_PYTHON':
+			return False
+		if not base_client:
 			return False
 		if message['type'] == 'try_to_match':
 			base_client.try_to_match(clients, sock)
