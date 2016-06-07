@@ -32,16 +32,6 @@ let send_msg = (msg) => {
 // Global variable containing all the clients.
 let clients = {};
 
-// Global variables for Twilio. At the moment I am using Twilio but fuck that in the future.
-
-let account_sid = "AC5e8ed5029d7539d496c3e8fd538e10fd"
-let api_key = "SK9c30753a41ccb5a9f21be736384866db"
-let api_secret = "WyuKvPxehyA5YzFRDTm3X2PsRjq2LC92"
-let configuration_profile_sid = "VS4b07a03bb48f5d33c988e466f9be30bb"
-
-let AccessToken = require('twilio').AccessToken;
-let ConversationsGrant = AccessToken.ConversationsGrant;
-
 // Utility to generate uuid
 let guid = () => {
 	let s4 = () => {
