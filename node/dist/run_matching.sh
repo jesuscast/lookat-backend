@@ -1,1 +1,0 @@
-forever start server_matching.js -l $(pwd)/server_matching.log -e $(pwd)/server_matching.log -o $(pwd)/server_matching.log --pidFile $(pwd)/server_matching.pid --uid server_matching --append --workingDir $(pwd)
