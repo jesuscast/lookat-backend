@@ -7,3 +7,4 @@ env/
 *.mov
 *.xlsx
 node_modules/
+*.pyc
