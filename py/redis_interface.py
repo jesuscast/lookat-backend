@@ -12,7 +12,11 @@ class RedisInterface:
 		self.redis_server = redis.StrictRedis(host, port, db)
 	def setK(self, client_name, key, value):
 		""" Sets a specific key for a particular client """
-		client_current_data = json.loads(self.redis_server.hget('clients', client_name))
+		client_current_data = {}
+		try:
+			client_current_data = json.loads(self.redis_server.hget('clients', client_name))
+		except:
+			client_current_data = {}
 		client_current_data[key] = value
 		self.redis_server.hset('clients', client_name, json.dumps(client_current_data))
 		return True
