@@ -70,6 +70,7 @@ class Client:
 		redis_interface.ready_to_match(self.id)
 		distances_and_ids = []
 		if int(redis_interface.getK(self.id, 'flags_number')) > 2:
+			print 'Connection not accepted'
 			sock.sendall({'type': 'connection_not_accepted', 'content': self.id})
 			return True
 		for index, client in enumerate(clients):
