@@ -41,19 +41,10 @@ var guid = function guid() {
 };
 
 var connection_made = function connection_made(tmp_guid, socket) {
-	// Create the token
-	var token = new AccessToken(account_sid, api_key, api_secret);
-	// Save the identity
-	token.identity = tmp_guid;
-	// Create the grant.
-	var grant = new ConversationsGrant();
-	grant.configurationProfileSid = configuration_profile_sid;
-	// Add the grant to the token.
-	token.addGrant(grant);
 	// Save this into the array of clients.
-	clients[tmp_guid] = { 'socket': socket, 'grant': grant, 'token': token, 'identity': tmp_guid };
+	clients[tmp_guid] = { 'socket': socket, 'identity': tmp_guid };
 	// Now write back to the client with the token information.
-	var data_to_send = { 'type': 'connection_received', 'token': token.toJwt(), 'identity': tmp_guid };
+	var data_to_send = { 'type': 'connection_received', 'token': '', 'identity': tmp_guid };
 	socket.write(JSON.stringify(data_to_send));
 };
 
