@@ -1,1 +1,0 @@
-Applications/Chromium.app/Contents/MacOS/Chromium --use-fake-device-for-media-stream --use-file-for-fake-video-capture=/Users/macbook/Documents/lookat/backend/bowing_qcif.y4m

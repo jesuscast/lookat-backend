@@ -6,3 +6,5 @@ env/
 *.y4m
 *.mov
 *.xlsx
+node_modules/
+*.pyc
