@@ -23,7 +23,10 @@ class RedisInterface:
 	def getK(self, client_name, key):
 		""" Returns a particular key for a particular client """
 		client_current_data = json.loads(self.redis_server.hget('clients', client_name))
-		return client_current_data[key]
+		if key in client_current_data:
+			return client_current_data[key]
+		else:
+			return False
 	def setM(self, client_name, data):
 		""" Sets multiple keys for the client """
 		client_current_data = json.loads(self.redis_server.hget('clients', client_name))

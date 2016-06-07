@@ -27,6 +27,9 @@ class Client:
 		self.id = id_t
 		self.matched_with = None
 		self.ready_to_match = True
+		# Create default values on redis if they do not exist.
+		for key, default in [('flags_number','0'), ('matched_with', 'none'), ('ready_to_match', 'true'), ('connected', 'true'), ('accepted', 'false')]:
+			redis_interface.setK(self.id, key, default)
 	def distance_from(self, lat_2, long_2):
 		"""
 			Calculates the distance from the client to coordinates
@@ -69,6 +72,7 @@ class Client:
 		"""
 		redis_interface.ready_to_match(self.id)
 		distances_and_ids = []
+		# First make sure flags exist
 		if int(redis_interface.getK(self.id, 'flags_number')) > 2:
 			print 'Connection not accepted'
 			sock.sendall({'type': 'connection_not_accepted', 'content': self.id})
