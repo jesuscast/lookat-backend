@@ -1,0 +1,19 @@
+/*
+
+First message
+
+{"type": "uuid_received", "content": "asdasd"}
+
+Second Message
+
+{"lat": 2, "type": "join", "long": 3}
+
+Third Message:
+{"type": "try_to_match"}
+
+Fourth Message #1:
+{"type": "accepted", "id": }
+
+
+In case that the conversation from twilio  is lost. the person should try to get back into matching.
+*/

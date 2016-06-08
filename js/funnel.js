@@ -1,63 +1,151 @@
-"use strict";
+'use strict';
 
-// Requirements.
-var net = require("net");
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+* Connection and redis libraries
+*/
+var net = require('net');
 var Redis = require('ioredis');
 var redis_client = new Redis();
-/*
 
-First message
-
-{"type": "uuid_received", "content": "asdasd"}
-
-Second Message
-
-{"lat": 2, "type": "join", "long": 3}
-
-Third Message:
-{"type": "try_to_match"}
-
-Fourth Message #1:
-{"type": "accepted", "id": }
-
-
-In case that the conversation from twilio  is lost. the person should try to get back into matching.
+/**
+* Sends Messages to the matching server.
 */
 var send_msg = function send_msg(msg) {
-	redis_client.multi().rpush("messages", JSON.stringify(msg)).exec(function (err, results) {
-		// results === [[null, 'OK'], [null, 'bar']]
-		console.log(results);
-	});
+	redis_client.multi().rpush('messages', JSON.stringify(msg)).exec(function (err, results) {});
 };
-// Global variable containing all the clients.
+
+/**
+* Clients holder
+*/
 var clients = {};
 
-// Utility to generate uuid
-var guid = function guid() {
-	var s4 = function s4() {
-		return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-	};
-	return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-};
+var Client = function () {
+	/*
+ * Client 'A' always refers to the client who either requested the information.
+ * or whose the result is intended for. Client 'B' refers to a client who is
+ * not the main goal of the message but somehow the message involves him. This
+ * applies in every JSON message sent.
+ */
 
-var connection_made = function connection_made(tmp_guid, socket) {
-	// Save this into the array of clients.
-	clients[tmp_guid] = { 'socket': socket, 'identity': tmp_guid };
-	// Now write back to the client with the token information.
-	var data_to_send = { 'type': 'connection_received', 'token': '', 'identity': tmp_guid };
-	socket.write(JSON.stringify(data_to_send));
-};
+	function Client(guid, longitude, latitude, socket) {
+		_classCallCheck(this, Client);
 
-// Twilio Information.
+		this.guid = guid;
+		this.longitude = longitude;
+		this.latitude = latitude;
+		this.socket = socket;
+		this.functions_dictionary = {
+			'both_accepted': Client.both_clients_accepted,
+			'clients_matched': Client.clients_matched,
+			'connection_not_accepted': Client.connection_not_accepted,
+			'try_to_match': this.try_to_match,
+			'accepted': this.accepted,
+			'send_both_back_into_matching': this.send_both_back_into_matching,
+			'flag_other_user': this.flag_other_user,
+			'send_data_to_partner': this.send_data_to_partner,
+			'not_initiator_call_started': this.not_initiator_call_started
+		};
+	}
+
+	/*
+ * All of the static methods are methods called because of an action of
+ * the matching server. Is usually as a response to a request used by a
+ * client.
+ */
+
+
+	_createClass(Client, [{
+		key: 'try_to_match',
+
+
+		/*
+  * The following methods are used by the clients in order to communicate with the matching server.
+  */
+		value: function try_to_match(data_received) {
+			send_msg({ 'type': 'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude });
+		}
+	}, {
+		key: 'accepted',
+		value: function accepted(data_received) {
+			send_msg({ 'type': 'accepted', 'id': this.guid });
+		}
+	}, {
+		key: 'send_both_back_into_matching',
+		value: function send_both_back_into_matching(data_received) {
+			send_msg({ 'type': 'send_both_back_into_matching', 'content': 'nothing' });
+		}
+	}, {
+		key: 'flag_other_user',
+		value: function flag_other_user(data_received) {
+			send_msg({ 'type': 'flag_other_user', 'id': tmp_guid });
+		}
+
+		/*
+  * The following methods are used by the clients in order to communicate with other client.
+  */
+
+	}, {
+		key: 'send_data_to_partner',
+		value: function send_data_to_partner(data_received) {
+			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'partner_data', 'content': data_received['content'] }));
+		}
+	}, {
+		key: 'not_initiator_call_started',
+		value: function not_initiator_call_started(data_received) {
+			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'call_now' }));
+		}
+
+		/*
+  * Entry point for calling every function
+  */
+
+	}, {
+		key: 'execute_function',
+		value: function execute_function(data_received) {
+			if (this.functions_dictionary.hasOwnProperty(data_received['type'])) this.functions_dictionary[data_received['type']](data_received);else console.log(data_received['type'] + ' not recognized as a function');
+		}
+	}], [{
+		key: 'both_clients_accepted',
+		value: function both_clients_accepted(data_received) {
+			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'both_accepted' }));
+			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'both_accepted' }));
+		}
+	}, {
+		key: 'clients_matched',
+		value: function clients_matched(data_received) {
+			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'matched_with', 'content': data_received['person_b'], 'initiate': 'true' }));
+			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'matched_with', 'content': data_received['person_a'], 'initiate': 'false' }));
+		}
+	}, {
+		key: 'connection_not_accepted',
+		value: function connection_not_accepted(data_received) {
+			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'connection_not_accepted', 'content': 'You have been flagged two times or more.' }));
+		}
+	}, {
+		key: 'person_was_flagged',
+		value: function person_was_flagged(data_received) {
+			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'person_was_flagged', 'content': 'You have been flagged' }));
+		}
+	}]);
+
+	return Client;
+}();
+
+/**
+* Socket Server Entry Point
+*/
+
 
 var server = net.createServer(function (socket) {
-	// Whenever somebody disconnects
-	// Remove the client from the list when it leaves
 	var tmp_guid = '';
-	var joined_already = false;
+
 	socket.on('end', function () {
-		delete clients[tmp_guid];
 		send_msg({ 'type': 'disconnected', 'id': tmp_guid });
+		delete clients[tmp_guid];
 	});
 
 	socket.on('data', function (data) {
@@ -78,67 +166,15 @@ var server = net.createServer(function (socket) {
 			// Loop over the types in order to find the correct response
 			if (data_received.hasOwnProperty('type')) {
 				var data_type = data_received['type'];
-				switch (data_type) {
-					case 'uuid_received':
-						tmp_guid = data_received['content'];
-						console.log('uuid_received from: ' + tmp_guid);
-						connection_made(tmp_guid, socket);
-						break;
-					case 'join':
-						/*
-      	Join expects the coordinates already sent in the body
-      */
-						console.log('JOIN');
-						if (!joined_already) {
-							console.log('join from: ' + tmp_guid);
-							send_msg({ 'type': 'join', 'id': tmp_guid, 'lat': data_received['lat'], 'long': data_received['long'] });
-							joined_already = true;
-						} else {
-							console.log('NOT ACCEPTED from: ' + tmp_guid);
-						}
-						break;
-					case 'try_to_match':
-						console.log('try_to_match from: ' + tmp_guid);
-						send_msg({ 'type': 'try_to_match', 'id': tmp_guid });
-						// matching_client.emit('try_to_match', tmp_guid, data_received);
-						break;
-					case 'accepted':
-						console.log('accepted from: ' + tmp_guid);
-						send_msg({ 'type': 'accepted', 'id': tmp_guid });
-						// matching_client.emit('accepted', tmp_guid, data_received);
-						break;
-					case 'both_accepted':
-						console.log('MASTER PYTHON AS SAID SOMETHING TO ME ABOUT ACCEPTED');
-						clients[data_received['person_a']]['socket'].write(JSON.stringify({ 'type': 'both_accepted' }));
-						clients[data_received['person_b']]['socket'].write(JSON.stringify({ 'type': 'both_accepted' }));
-					// break;
-					case 'matched_with':
-						console.log('MASTER PYTHON HAS SAID SOMETHING TO ME');
-						clients[data_received['person_a']]['socket'].write(JSON.stringify({ 'type': 'matched_with', 'content': data_received['person_b'], 'initiate': 'true' }));
-						clients[data_received['person_b']]['socket'].write(JSON.stringify({ 'type': 'matched_with', 'content': data_received['person_a'], 'initiate': 'false' }));
-						break;
-					case 'connection_not_accepted':
-						console.log('MASTER PYTHON HAS SAID SOMETHING TO ME');
-						// this happens if the user has two flags or more.
-						clients[data_received['id']]['socket'].write(JSON.stringify({ 'type': 'connection_not_accepted', 'content': 'You have been flagged two times or more.' }));
-					case 'send_both_back_into_matching':
-						console.log('MASTER PYTHON HAS SAID SOMETHING TO ME');
-						// clients[data_received['person_a']]['socket'].write(JSON.stringify({'type':'close_conversation','content': 'You just matched the other person.'}));
-						send_msg({ 'type': 'send_both_back_into_matching', 'content': 'nothing' });
-					case 'flag_other_user':
-						send_msg({ 'type': 'flag_other_user', 'id': tmp_guid });
-						break;
-					case 'send_data_to_partner':
-						/* This works for the phonertc server */
-						clients[data_received['person_a']]['socket'].write(JSON.stringify({ 'type': 'partner_data', 'content': data_received['content'] }));
-						break;
-					case "not_initiator_call_started":
-						clients[data_received['person_a']]['socket'].write(JSON.stringify({ 'type': 'call_now', 'content': data_received['content'] }));
-						break;
-					default:
-						console.log('Type not recognized');
-				} // end of switch
+				if (!clients.hasOwnProperty(data_type['id']) && data_type == 'try_to_match') clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket);else if (!clients.hasOwnProperty(data_type['id'])) return false;
+				// Every type of message has an associated function.
+				// If not then it would throw an error.
+				clients[data_type['id']].execute_function(data_received);
 			} //end of if
 		} // end of for
-	});
+	}); // End of data listener
 }).listen(8124);
+
+/**
+* Author: Jesus Andres Castaneda Sosa, 2016
+*/

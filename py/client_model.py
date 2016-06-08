@@ -28,7 +28,7 @@ class Client:
 		self.matched_with = None
 		self.ready_to_match = True
 		# Create default values on redis if they do not exist.
-		for key, default in [('flags_number','0'), ('matched_with', 'none'), ('ready_to_match', 'true'), ('connected', 'true'), ('accepted', 'false')]:
+		for key, default in [('flags_number','0'), ('matched_with', 'none'), ('ready_to_match', 'true'), ('accepted', 'false')]:
 			redis_interface.setK(self.id, key, default)
 	def distance_from(self, lat_2, long_2):
 		"""
@@ -37,32 +37,39 @@ class Client:
 		return vincenty((self.lat, self.long), (lat_2, long_2)).miles
 	def disconnect(self):
 		"""
-			Set values as if it has not matched with anybody
+			Set values as if it has not matched with anybody.
+			Sets ready_to_match = false, matched_with = none, accepted = false
 		"""
 		redis_interface.disconnect(self.id)
+		self.ready_to_match = False
+		self.matched_with = None
+		self.accepted = False
 		return True
+	def ready_to_match(self):
+		self.ready_to_match = True
+		redis_interface.ready_to_match(self.id)
 	def flag_myself(self):
-		self.disconnect()
 		redis_interface.flag(self.id)
 		return True
 	def disconnect_completely(self):
 		"""
 			Sets itself as disconnected a.k.a not talking etc, and sets the matching parnter to empty
 		"""
-		if self.matched_with:
-			print 'I had something I matched with previously'
-			self.matched_with.disconnect()
-		redis_interface.disconnect_completely(self.id)
+		matched_with = self.matched_with
+		if matched_with:
+			matched_with.disconnect()
+			matched_with.ready_to_match()
+		self.disconnect()
 		return True
 	def flag_other_user(self, sock):
 		"""
 			Flags the other user
 		"""
-		if self.matched_with and self.both_connected():
+		if self.matched_with:
 			matched_with_id = self.matched_with.id
 			self.matched_with.flag_myself()
-			self.disconnect()
-			sock.sendall(json.dumps({'type': 'send_both_back_into_matching', 'person_a': self.id, 'person_b': matched_with_id}))
+			self.send_both_back_into_matching()
+			sock.sendall(json.dumps({'type': 'person_was_flagged', 'person_a': matched_with_id}))
 		else:
 			print 'Base client was not matched with anybody or one or the other was not connected'
 		return True
@@ -70,16 +77,19 @@ class Client:
 		"""
 			Tries to match the current client
 		"""
-		redis_interface.ready_to_match(self.id)
+		self.ready_to_match()
 		distances_and_ids = []
 		# First make sure flags exist
 		if int(redis_interface.getK(self.id, 'flags_number')) > 2:
 			print 'Connection not accepted'
-			sock.sendall({'type': 'connection_not_accepted', 'content': self.id})
+			sock.sendall({'type': 'connection_not_accepted', 'person_a': self.id})
 			return True
 		for index, client in enumerate(clients):
-			if (client.id == self.id) or (client.matched_with != None) or (not client.connected) or (not client.ready_to_match):
+			if (client.id == self.id) or (client.matched_with != None) or (not client.ready_to_match):
 				print "I had to continue"
+				continue
+			if int(redis_interface.getK(client.id, 'flags_number')) > 2:
+				print client.id+' has more than two flags therefore he is not allowed to talk'
 				continue
 			distances_and_ids.append((client.distance_from( self.lat, self.long ), index))
 		distances_and_ids = sorted(distances_and_ids, key=lambda distance: distance[0])
@@ -89,7 +99,7 @@ class Client:
 			self.matched_with = matched_with
 			redis_interface.matched(matched_with.id, self.id)
 			print 'matched_with: '+str(matched_with.id)
-			sock.sendall(json.dumps({'type':'matched_with', 'person_a': self.id, 'person_b': self.matched_with.id}))
+			sock.sendall(json.dumps({'type':'clients_matched', 'person_a': self.id, 'person_b': self.matched_with.id}))
 		else:
 			print 'Did not match with anybody'
 		return True
@@ -97,23 +107,20 @@ class Client:
 		if not self.matched_with:
 			print "I tried to send_both_back_into_matching but I had no matches"
 			return False
-		redis_interface.setK(self.id, 'matched_with', 'none')
-		redis_interface.setK(self.matched_with.id, 'matched_with', 'none')
-		redis_interface.ready_to_match(self.id)
-		redis_interface.ready_to_match(self.matched_with.id)
-		self.ready_to_match = True
-		self.matched_with.ready_to_match = True
-		self.matched_with = None
-		self.matched_with.matched_with = None
+		matched_with = self.matched_with
+		# Set for the matched with guy.
+		matched_with.disconnect()
+		matched_with.ready_to_match()
+		# Set up for myself.
+		self.disconnect()
+		self.ready_to_match()
 		return True
-	def both_connected(self):
-		return (redis_interface.getK(self.matched_with.id, 'connected') == 'true')  and (redis_interface.getK(self.id, 'connected') == 'true')
 	def accepted(self, sock):
 		"""
 			Sets values for this client to accept the conversation.
 			If the other client accepted too then send a socket request
 		"""
-		if self.matched_with and self.both_connected():
+		if self.matched_with:
 			if self.matched_with.matched_with == self:
 				print 'Everything seems correct'
 				redis_interface.accepted(self.id)

@@ -37,39 +37,48 @@ def execute_message(message):
 		Interprets the messages and decides what to do depending on the type
 	"""
 	if 'type' in message and 'id' in message:
+		# According to the funnel.js class, there are five types of messages
+		# this could receive.
+		# 'try_to_match'
+		# 'accepted'
+		# 'send_both_back_into_matching'
+		# 'flag_other_user'
+		#
 		# First of all I need to check if the client is tyring to joing for the first time.
 		print message
-		if message['type'] == 'join':
+		if message['type'] == 'try_to_match':
 			join = True
 			for client in clients:
 				if message['id'] == client.id:
 					join = False
 			if join:
-				clients.append(Client(lat_t = message['lat'], long_t = message['long'], id_t = message['id']))
-			print len(clients)
-			return join
+				clients.append(Client(lat_t = message['latitude'], long_t = message['longitude'], id_t = message['id']))
 		# If I reach this level I could be assured that the client already joined and therefore
 		# base client will never be none.
 		base_client = None
 		for client in clients:
 			if message['id'] == client.id:
 				base_client = client
+				break
 		if message['id'].replace(' ','') == 'MASTER_PYTHON':
 			return False
 		if not base_client:
 			return False
 		if message['type'] == 'try_to_match':
-			base_client.try_to_match(clients, sock)
+			if not base_client.matched_with:
+				base_client.try_to_match(clients, sock)
+			else:
+				print 'I am trying to match but I already matched with: '+base_client.matched_with.id
 		elif message['type'] == 'accepted':
 			base_client.accepted(sock)
-		elif message['type'] == 'flag_other_user':
-			base_client.flag_other_user(sock)
 		elif message['type'] == 'send_both_back_into_matching':
 			base_client.send_both_back_into_matching()
 			# Now I automatically send everyone back into matching. because the previous function resets both this guy and the other guy lol
 			base_client.try_to_match(clients, sock)
+		elif message['type'] == 'flag_other_user':
+			base_client.flag_other_user(sock)
+			base_client.try_to_match(clients, sock)
 		elif message['type'] == 'disconnected':
-			print message
 			base_client.disconnect_completely()
 
 if __name__=="__main__":
