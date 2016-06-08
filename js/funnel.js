@@ -16,6 +16,8 @@ console.log('We began baby!');
 * Sends Messages to the matching server.
 */
 var send_msg = function send_msg(msg) {
+	console.log('Sending to matching: ');
+	console.log(JSON.stringify(msg));
 	redis_client.multi().rpush('messages', JSON.stringify(msg)).exec(function (err, results) {});
 };
 
