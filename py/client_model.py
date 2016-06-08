@@ -49,9 +49,7 @@ class Client:
 		self.ready_to_match = True
 		redis_interface.ready_to_match(self.id)
 	def flag_myself(self):
-		self.disconnect()
 		redis_interface.flag(self.id)
-		self.ready_to_match()
 		return True
 	def disconnect_completely(self):
 		"""
@@ -70,9 +68,8 @@ class Client:
 		if self.matched_with:
 			matched_with_id = self.matched_with.id
 			self.matched_with.flag_myself()
-			self.disconnect()
-			self.ready_to_match()
-			sock.sendall(json.dumps({'type': 'send_both_back_into_matching', 'person_a': self.id, 'person_b': matched_with_id}))
+			self.send_both_back_into_matching()
+			sock.sendall(json.dumps({'type': 'person_was_flagged', 'person_a': matched_with_id}))
 		else:
 			print 'Base client was not matched with anybody or one or the other was not connected'
 		return True
@@ -90,6 +87,9 @@ class Client:
 		for index, client in enumerate(clients):
 			if (client.id == self.id) or (client.matched_with != None) or (not client.ready_to_match):
 				print "I had to continue"
+				continue
+			if int(redis_interface.getK(client.id, 'flags_number')) > 2:
+				print client.id+' has more than two flags therefore he is not allowed to talk'
 				continue
 			distances_and_ids.append((client.distance_from( self.lat, self.long ), index))
 		distances_and_ids = sorted(distances_and_ids, key=lambda distance: distance[0])

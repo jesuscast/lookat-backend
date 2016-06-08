@@ -59,12 +59,16 @@ def execute_message(message):
 		for client in clients:
 			if message['id'] == client.id:
 				base_client = client
+				break
 		if message['id'].replace(' ','') == 'MASTER_PYTHON':
 			return False
 		if not base_client:
 			return False
 		if message['type'] == 'try_to_match':
-			base_client.try_to_match(clients, sock)
+			if not base_client.matched_with:
+				base_client.try_to_match(clients, sock)
+			else:
+				print 'I am trying to match but I already matched with: '+base_client.matched_with.id
 		elif message['type'] == 'accepted':
 			base_client.accepted(sock)
 		elif message['type'] == 'send_both_back_into_matching':
@@ -73,6 +77,7 @@ def execute_message(message):
 			base_client.try_to_match(clients, sock)
 		elif message['type'] == 'flag_other_user':
 			base_client.flag_other_user(sock)
+			base_client.try_to_match(clients, sock)
 		elif message['type'] == 'disconnected':
 			base_client.disconnect_completely()
 

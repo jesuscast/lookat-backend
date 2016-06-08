@@ -65,6 +65,10 @@ class Client {
 		clients[data_received['person_a']].socket.write(JSON.stringify({'type': 'connection_not_accepted', 'content': 'You have been flagged two times or more.'}));
 	}
 
+	static person_was_flagged(data_received){
+		clients[data_received['person_a']].socket.write(JSON.stringify({'type': 'person_was_flagged', 'content' : 'You have been flagged'}));
+	}
+
 	/*
 	* The following methods are used by the clients in order to communicate with the matching server.
 	*/
@@ -92,7 +96,7 @@ class Client {
 	}
 
 	not_initiator_call_started(data_received){
-		clients[data_received['person_b']].socket.write(JSON.stringify({'type' : 'call_now', 'content': data_received['content']}));
+		clients[data_received['person_b']].socket.write(JSON.stringify({'type' : 'call_now'}));
 	}
 
 	/*

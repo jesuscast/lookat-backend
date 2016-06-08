@@ -96,7 +96,7 @@ var Client = function () {
 	}, {
 		key: 'not_initiator_call_started',
 		value: function not_initiator_call_started(data_received) {
-			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'call_now', 'content': data_received['content'] }));
+			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'call_now' }));
 		}
 
 		/*
@@ -124,6 +124,11 @@ var Client = function () {
 		key: 'connection_not_accepted',
 		value: function connection_not_accepted(data_received) {
 			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'connection_not_accepted', 'content': 'You have been flagged two times or more.' }));
+		}
+	}, {
+		key: 'person_was_flagged',
+		value: function person_was_flagged(data_received) {
+			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'person_was_flagged', 'content': 'You have been flagged' }));
 		}
 	}]);
 
