@@ -106,7 +106,7 @@ var Client = function () {
 				'connection_not_accepted': Client.connection_not_accepted,
 				'try_to_match': function a(data_received) {
 					this.try_to_match_local(data_received);
-				},
+				}.bind(this),
 				'accepted': this.accepted,
 				'send_both_back_into_matching': this.send_both_back_into_matching,
 				'flag_other_user': this.flag_other_user,
