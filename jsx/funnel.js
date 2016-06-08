@@ -65,7 +65,6 @@ class Client {
 	* The following methods are used by the clients in order to communicate with the matching server.
 	*/
 	try_to_match_local(data_received){
-		console.log(this.guid)
 		let data = {'type':'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude}
 		send_msg(data)
 	}
@@ -108,7 +107,6 @@ class Client {
 			'send_data_to_partner': 		function h(data_received){ this.send_data_to_partner(data_received) }.bind(this),
 			'not_initiator_call_started': 	function i(data_received){ this.not_initiator_call_started(data_received) }.bind(this),
 		}
-		console.log(this.guid)
 		if(functions_dictionary.hasOwnProperty(data_received['type']))
 			functions_dictionary[data_received['type']](data_received)
 		else
@@ -148,9 +146,7 @@ let server = net.createServer((socket) => {
 			if( data_received.hasOwnProperty('type') ){
 				let data_type = data_received['type']
 				if(!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match'){
-					console.log('this is the first time trying to connect')
 					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket)
-					console.log(clients[data_received['id']].latitude)
 				} else if(!clients.hasOwnProperty(data_received['id'])) {
 					return false
 				}
