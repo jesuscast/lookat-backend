@@ -69,11 +69,7 @@ var Client = function () {
   * The following methods are used by the clients in order to communicate with the matching server.
   */
 		value: function try_to_match(data_received) {
-			console.log(this.latitude);
-			console.log(this.longitude);
 			var data = { 'type': 'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude };
-			console.log('data');
-			console.log(data);
 			send_msg(data);
 		}
 	}, {
@@ -174,8 +170,8 @@ var server = net.createServer(function (socket) {
 			// Loop over the types in order to find the correct response
 			if (data_received.hasOwnProperty('type')) {
 				var data_type = data_received['type'];
-				console.log(data_received);
 				if (!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match') {
+					console.log('this is the first time trying to connect');
 					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket);
 				} else if (!clients.hasOwnProperty(data_received['id'])) {
 					return false;
