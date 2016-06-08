@@ -99,7 +99,7 @@ var Client = function () {
 	}, {
 		key: 'execute_function',
 		value: function execute_function(data_received) {
-			this.functions_dictionary = {
+			functions_dictionary = {
 				'both_accepted': Client.both_clients_accepted,
 				'clients_matched': Client.clients_matched,
 				'connection_not_accepted': Client.connection_not_accepted,
@@ -110,7 +110,7 @@ var Client = function () {
 				'send_data_to_partner': this.send_data_to_partner,
 				'not_initiator_call_started': this.not_initiator_call_started
 			};
-			if (this.functions_dictionary.hasOwnProperty(data_received['type'])) this.functions_dictionary[data_received['type']](data_received);else console.log(data_received['type'] + ' not recognized as a function');
+			if (functions_dictionary.hasOwnProperty(data_received['type'])) functions_dictionary[data_received['type']](data_received);else console.log(data_received['type'] + ' not recognized as a function');
 		}
 	}], [{
 		key: 'both_clients_accepted',
