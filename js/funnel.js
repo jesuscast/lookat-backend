@@ -99,7 +99,7 @@ var Client = function () {
 	}, {
 		key: 'execute_function',
 		value: function execute_function(data_received) {
-			functions_dictionary = {
+			var functions_dictionary = {
 				'both_accepted': Client.both_clients_accepted,
 				'clients_matched': Client.clients_matched,
 				'connection_not_accepted': Client.connection_not_accepted,
