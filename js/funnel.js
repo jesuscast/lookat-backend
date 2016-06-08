@@ -58,7 +58,6 @@ var Client = function () {
   * The following methods are used by the clients in order to communicate with the matching server.
   */
 		value: function try_to_match_local(data_received) {
-			console.log(this.guid);
 			var data = { 'type': 'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude };
 			send_msg(data);
 		}
@@ -129,7 +128,6 @@ var Client = function () {
 					this.not_initiator_call_started(data_received);
 				}.bind(this)
 			};
-			console.log(this.guid);
 			if (functions_dictionary.hasOwnProperty(data_received['type'])) functions_dictionary[data_received['type']](data_received);else console.log(data_received['type'] + ' not recognized as a function');
 		}
 	}], [{
@@ -191,9 +189,7 @@ var server = net.createServer(function (socket) {
 			if (data_received.hasOwnProperty('type')) {
 				var data_type = data_received['type'];
 				if (!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match') {
-					console.log('this is the first time trying to connect');
 					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket);
-					console.log(clients[data_received['id']].latitude);
 				} else if (!clients.hasOwnProperty(data_received['id'])) {
 					return false;
 				}
