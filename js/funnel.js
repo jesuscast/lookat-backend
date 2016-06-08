@@ -51,13 +51,13 @@ var Client = function () {
 
 
 	_createClass(Client, [{
-		key: 'try_to_match',
+		key: 'try_to_match_local',
 
 
 		/*
   * The following methods are used by the clients in order to communicate with the matching server.
   */
-		value: function try_to_match(data_received) {
+		value: function try_to_match_local(data_received) {
 			console.log(this.guid);
 			var data = { 'type': 'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude };
 			send_msg(data);
@@ -105,7 +105,7 @@ var Client = function () {
 				'clients_matched': Client.clients_matched,
 				'connection_not_accepted': Client.connection_not_accepted,
 				'try_to_match': function a(data_received) {
-					this.try_to_match(data_received);
+					this.try_to_match_local(data_received);
 				},
 				'accepted': this.accepted,
 				'send_both_back_into_matching': this.send_both_back_into_matching,
