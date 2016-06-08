@@ -142,6 +142,7 @@ let server = net.createServer((socket) => {
 			// Loop over the types in order to find the correct response
 			if( data_received.hasOwnProperty('type') ){
 				let data_type = data_received['type']
+				console.log(data_received)
 				if(!clients.hasOwnProperty(data_type['id']) && data_type == 'try_to_match')
 					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket)
 				else if(!clients.hasOwnProperty(data_type['id']))
