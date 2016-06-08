@@ -148,7 +148,7 @@ let server = net.createServer((socket) => {
 					return false
 				// Every type of message has an associated function.
 				// If not then it would throw an error.
-				clients[data_type['id']].execute_function(data_received)
+				clients[data_received['id']].execute_function(data_received)
 			} //end of if
 		} // end of for
 	}) // End of data listener
