@@ -98,15 +98,15 @@ class Client {
 	*/
 	execute_function(data_received){
 		let functions_dictionary = {
-			'both_accepted': Client.both_clients_accepted,
-			'clients_matched': Client.clients_matched,
-			'connection_not_accepted': Client.connection_not_accepted,
-			'try_to_match': (data_received) => { this.try_to_match_local(data_received) }.bind(this),
-			'accepted': this.accepted,
-			'send_both_back_into_matching': this.send_both_back_into_matching,
-			'flag_other_user': this.flag_other_user,
-			'send_data_to_partner': this.send_data_to_partner,
-			'not_initiator_call_started': this.not_initiator_call_started
+			'both_accepted': 				function a(data_received){  Client.both_clients_accepted(data_received) }.bind(this),
+			'clients_matched':  			function b(data_received){ Client.clients_matched(data_received) }.bind(this),
+			'connection_not_accepted': 		function c(data_received){  Client.connection_not_accepted(data_received) }.bind(this),
+			'try_to_match': 				function d(data_received){ this.try_to_match_local(data_received) }.bind(this),
+			'accepted': 					function e(data_received){ this.accepted(data_received) }.bind(this),
+			'send_both_back_into_matching': function f(data_received){ this.send_both_back_into_matching(data_received) }.bind(this),
+			'flag_other_user': 				function g(data_received){ this.flag_other_user(data_received) }.bind(this),
+			'send_data_to_partner': 		function h(data_received){ this.send_data_to_partner(data_received) }.bind(this),
+			'not_initiator_call_started': 	function i(data_received){ this.not_initiator_call_started(data_received) }.bind(this),
 		}
 		console.log(this.guid)
 		if(functions_dictionary.hasOwnProperty(data_received['type']))
