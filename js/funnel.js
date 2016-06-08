@@ -173,6 +173,7 @@ var server = net.createServer(function (socket) {
 				if (!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match') {
 					console.log('this is the first time trying to connect');
 					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket);
+					console.log(clients[data_received['id']].latitude);
 				} else if (!clients.hasOwnProperty(data_received['id'])) {
 					return false;
 				}
