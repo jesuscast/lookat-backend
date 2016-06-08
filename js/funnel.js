@@ -189,6 +189,7 @@ var server = net.createServer(function (socket) {
 			if (data_received.hasOwnProperty('type')) {
 				var data_type = data_received['type'];
 				if (!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match') {
+					tmp_guid = data_received['id'];
 					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket);
 				} else if (!clients.hasOwnProperty(data_received['id'])) {
 					return false;
