@@ -76,7 +76,12 @@ class Client {
 	* The following methods are used by the clients in order to communicate with the matching server.
 	*/
 	try_to_match(data_received){
-		send_msg({'type':'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude})
+		console.log(this.latitude)
+		console.log(this.longitude)
+		let data = {'type':'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude}
+		console.log('data')
+		console.log(data)
+		send_msg(data)
 	}
 
 	accepted(data_received){
