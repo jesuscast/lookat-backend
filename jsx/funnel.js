@@ -5,6 +5,7 @@ const net = require('net')
 let Redis = require('ioredis')
 let redis_client = new Redis()
 
+console.log('We began baby!')
 /**
 * Sends Messages to the matching server.
 */

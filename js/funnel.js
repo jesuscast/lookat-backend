@@ -11,6 +11,7 @@ var net = require('net');
 var Redis = require('ioredis');
 var redis_client = new Redis();
 
+console.log('We began baby!');
 /**
 * Sends Messages to the matching server.
 */
