@@ -88,6 +88,7 @@ var server = net.createServer(function (socket) {
 						/*
       	Join expects the coordinates already sent in the body
       */
+						console.log('JOIN');
 						if (!joined_already) {
 							console.log('join from: ' + tmp_guid);
 							send_msg({ 'type': 'join', 'id': tmp_guid, 'lat': data_received['lat'], 'long': data_received['long'] });
