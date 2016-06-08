@@ -36,11 +36,8 @@ class RedisInterface:
 	def disconnect(self, client_name):
 		self.setM(client_name, [('matched_with','none'),('accepted','false'),('ready_to_match','false')])
 	def flag(self, client_name):
-		self.disconnect_client(client_name)
-		self.setK(client_name, 'flags_number', int(self.getK(client_name, 'flags_number'))+1)
-	def disconnect_completely(self, client_name):
 		self.disconnect(client_name)
-		self.setK(client_name, 'connected', 'false')
+		self.setK(client_name, 'flags_number', int(self.getK(client_name, 'flags_number'))+1)
 	def ready_to_match(self, client_name):
 		self.setK(client_name, 'ready_to_match', 'true')
 	def accepted(self, client_name):

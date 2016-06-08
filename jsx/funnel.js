@@ -1,7 +1,7 @@
 /**
 * Connection and redis libraries
 */
-const net = require("net")
+const net = require('net')
 let Redis = require('ioredis')
 let redis_client = new Redis()
 
@@ -10,7 +10,7 @@ let redis_client = new Redis()
 */
 let send_msg = (msg) => {
 	redis_client.multi()
-		.rpush("messages", JSON.stringify(msg))
+		.rpush('messages', JSON.stringify(msg))
 		.exec(function (err, results) {
 
 	})
@@ -34,7 +34,7 @@ class Client {
 		this.latitude = latitude
 		this.socket = socket
 		this.functions_dictionary = {
-			'both_clients_accepted': Client.both_clients_accepted,
+			'both_accepted': Client.both_clients_accepted,
 			'clients_matched': Client.clients_matched,
 			'connection_not_accepted': Client.connection_not_accepted,
 			'try_to_match': this.try_to_match,

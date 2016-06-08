@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -7,7 +7,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 /**
 * Connection and redis libraries
 */
-var net = require("net");
+var net = require('net');
 var Redis = require('ioredis');
 var redis_client = new Redis();
 
@@ -15,7 +15,7 @@ var redis_client = new Redis();
 * Sends Messages to the matching server.
 */
 var send_msg = function send_msg(msg) {
-	redis_client.multi().rpush("messages", JSON.stringify(msg)).exec(function (err, results) {});
+	redis_client.multi().rpush('messages', JSON.stringify(msg)).exec(function (err, results) {});
 };
 
 /**
@@ -39,7 +39,7 @@ var Client = function () {
 		this.latitude = latitude;
 		this.socket = socket;
 		this.functions_dictionary = {
-			'both_clients_accepted': Client.both_clients_accepted,
+			'both_accepted': Client.both_clients_accepted,
 			'clients_matched': Client.clients_matched,
 			'connection_not_accepted': Client.connection_not_accepted,
 			'try_to_match': this.try_to_match,
@@ -59,7 +59,7 @@ var Client = function () {
 
 
 	_createClass(Client, [{
-		key: "try_to_match",
+		key: 'try_to_match',
 
 
 		/*
@@ -69,17 +69,17 @@ var Client = function () {
 			send_msg({ 'type': 'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude });
 		}
 	}, {
-		key: "accepted",
+		key: 'accepted',
 		value: function accepted(data_received) {
 			send_msg({ 'type': 'accepted', 'id': this.guid });
 		}
 	}, {
-		key: "send_both_back_into_matching",
+		key: 'send_both_back_into_matching',
 		value: function send_both_back_into_matching(data_received) {
 			send_msg({ 'type': 'send_both_back_into_matching', 'content': 'nothing' });
 		}
 	}, {
-		key: "flag_other_user",
+		key: 'flag_other_user',
 		value: function flag_other_user(data_received) {
 			send_msg({ 'type': 'flag_other_user', 'id': tmp_guid });
 		}
@@ -89,12 +89,12 @@ var Client = function () {
   */
 
 	}, {
-		key: "send_data_to_partner",
+		key: 'send_data_to_partner',
 		value: function send_data_to_partner(data_received) {
 			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'partner_data', 'content': data_received['content'] }));
 		}
 	}, {
-		key: "not_initiator_call_started",
+		key: 'not_initiator_call_started',
 		value: function not_initiator_call_started(data_received) {
 			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'call_now', 'content': data_received['content'] }));
 		}
@@ -104,24 +104,24 @@ var Client = function () {
   */
 
 	}, {
-		key: "execute_function",
+		key: 'execute_function',
 		value: function execute_function(data_received) {
 			if (this.functions_dictionary.hasOwnProperty(data_received['type'])) this.functions_dictionary[data_received['type']](data_received);else console.log(data_received['type'] + ' not recognized as a function');
 		}
 	}], [{
-		key: "both_clients_accepted",
+		key: 'both_clients_accepted',
 		value: function both_clients_accepted(data_received) {
 			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'both_accepted' }));
 			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'both_accepted' }));
 		}
 	}, {
-		key: "clients_matched",
+		key: 'clients_matched',
 		value: function clients_matched(data_received) {
 			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'matched_with', 'content': data_received['person_b'], 'initiate': 'true' }));
 			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'matched_with', 'content': data_received['person_a'], 'initiate': 'false' }));
 		}
 	}, {
-		key: "connection_not_accepted",
+		key: 'connection_not_accepted',
 		value: function connection_not_accepted(data_received) {
 			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'connection_not_accepted', 'content': 'You have been flagged two times or more.' }));
 		}
