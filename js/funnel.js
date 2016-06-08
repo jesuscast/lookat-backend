@@ -58,6 +58,7 @@ var Client = function () {
   * The following methods are used by the clients in order to communicate with the matching server.
   */
 		value: function try_to_match(data_received) {
+			console.log(this.guid);
 			var data = { 'type': 'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude };
 			send_msg(data);
 		}
@@ -103,7 +104,9 @@ var Client = function () {
 				'both_accepted': Client.both_clients_accepted,
 				'clients_matched': Client.clients_matched,
 				'connection_not_accepted': Client.connection_not_accepted,
-				'try_to_match': this.try_to_match,
+				'try_to_match': setTimeout(function () {
+					this.try_to_match();
+				}, 0),
 				'accepted': this.accepted,
 				'send_both_back_into_matching': this.send_both_back_into_matching,
 				'flag_other_user': this.flag_other_user,
