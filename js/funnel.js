@@ -167,6 +167,7 @@ var server = net.createServer(function (socket) {
 			// Loop over the types in order to find the correct response
 			if (data_received.hasOwnProperty('type')) {
 				var data_type = data_received['type'];
+				console.log(data_received);
 				if (!clients.hasOwnProperty(data_type['id']) && data_type == 'try_to_match') clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket);else if (!clients.hasOwnProperty(data_type['id'])) return false;
 				// Every type of message has an associated function.
 				// If not then it would throw an error.
