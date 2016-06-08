@@ -6,7 +6,7 @@ let Redis = require('ioredis')
 let redis_client = new Redis()
 
 /**
-* Sends Messages to the matcher server.
+* Sends Messages to the matching server.
 */
 let send_msg = (msg) => {
 	redis_client.multi()
@@ -48,7 +48,7 @@ class Client {
 
 	/*
 	* All of the static methods are methods called because of an action of
-	* the matching server. Is usually as a response to a request made by a
+	* the matching server. Is usually as a response to a request used by a
 	* client.
 	*/
 	static both_clients_accepted(data_received){
@@ -66,7 +66,7 @@ class Client {
 	}
 
 	/*
-	* The following methods are made by the clients in order to communicate with the matching server.
+	* The following methods are used by the clients in order to communicate with the matching server.
 	*/
 	try_to_match(data_received){
 		send_msg({'type':'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude})
@@ -85,7 +85,7 @@ class Client {
 	}
 
 	/*
-	* The following methods are made by the clients in order to communicate with other client.
+	* The following methods are used by the clients in order to communicate with other client.
 	*/
 	send_data_to_partner(data_received){
 		clients[data_received['person_b']].socket.write(JSON.stringify({'type' : 'partner_data', 'content': data_received['content']}));
@@ -106,7 +106,9 @@ class Client {
 	}
 }
 
-
+/**
+* Socket Server Entry Point
+*/
 let server = net.createServer((socket) => {
 	let tmp_guid = ''
 

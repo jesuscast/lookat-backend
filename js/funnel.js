@@ -12,7 +12,7 @@ var Redis = require('ioredis');
 var redis_client = new Redis();
 
 /**
-* Sends Messages to the matcher server.
+* Sends Messages to the matching server.
 */
 var send_msg = function send_msg(msg) {
 	redis_client.multi().rpush("messages", JSON.stringify(msg)).exec(function (err, results) {});
@@ -53,7 +53,7 @@ var Client = function () {
 
 	/*
  * All of the static methods are methods called because of an action of
- * the matching server. Is usually as a response to a request made by a
+ * the matching server. Is usually as a response to a request used by a
  * client.
  */
 
@@ -63,7 +63,7 @@ var Client = function () {
 
 
 		/*
-  * The following methods are made by the clients in order to communicate with the matching server.
+  * The following methods are used by the clients in order to communicate with the matching server.
   */
 		value: function try_to_match(data_received) {
 			send_msg({ 'type': 'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude });
@@ -85,7 +85,7 @@ var Client = function () {
 		}
 
 		/*
-  * The following methods are made by the clients in order to communicate with other client.
+  * The following methods are used by the clients in order to communicate with other client.
   */
 
 	}, {
@@ -129,6 +129,11 @@ var Client = function () {
 
 	return Client;
 }();
+
+/**
+* Socket Server Entry Point
+*/
+
 
 var server = net.createServer(function (socket) {
 	var tmp_guid = '';
