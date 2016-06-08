@@ -45,7 +45,7 @@ class Client:
 		self.matched_with = None
 		self.accepted = False
 		return True
-	def ready_to_match(self):
+	def ready_to_match_f(self):
 		self.ready_to_match = True
 		redis_interface.ready_to_match(self.id)
 	def flag_myself(self):
@@ -77,7 +77,7 @@ class Client:
 		"""
 			Tries to match the current client
 		"""
-		self.ready_to_match()
+		self.ready_to_match_f()
 		distances_and_ids = []
 		# First make sure flags exist
 		if int(redis_interface.getK(self.id, 'flags_number')) > 2:
@@ -113,7 +113,7 @@ class Client:
 		matched_with.ready_to_match()
 		# Set up for myself.
 		self.disconnect()
-		self.ready_to_match()
+		self.ready_to_match_f()
 		return True
 	def accepted(self, sock):
 		"""

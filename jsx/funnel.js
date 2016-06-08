@@ -36,17 +36,6 @@ class Client {
 		this.longitude = longitude
 		this.latitude = latitude
 		this.socket = socket
-		this.functions_dictionary = {
-			'both_accepted': Client.both_clients_accepted,
-			'clients_matched': Client.clients_matched,
-			'connection_not_accepted': Client.connection_not_accepted,
-			'try_to_match': this.try_to_match,
-			'accepted': this.accepted,
-			'send_both_back_into_matching': this.send_both_back_into_matching,
-			'flag_other_user': this.flag_other_user,
-			'send_data_to_partner': this.send_data_to_partner,
-			'not_initiator_call_started': this.not_initiator_call_started
-		}
 	}
 
 	/*
@@ -75,12 +64,9 @@ class Client {
 	/*
 	* The following methods are used by the clients in order to communicate with the matching server.
 	*/
-	try_to_match(data_received){
-		console.log(this.latitude)
-		console.log(this.longitude)
+	try_to_match_local(data_received){
+		console.log(this.guid)
 		let data = {'type':'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude}
-		console.log('data')
-		console.log(data)
 		send_msg(data)
 	}
 
@@ -111,8 +97,20 @@ class Client {
 	* Entry point for calling every function
 	*/
 	execute_function(data_received){
-		if(this.functions_dictionary.hasOwnProperty(data_received['type']))
-			this.functions_dictionary[data_received['type']](data_received)
+		let functions_dictionary = {
+			'both_accepted': Client.both_clients_accepted,
+			'clients_matched': Client.clients_matched,
+			'connection_not_accepted': Client.connection_not_accepted,
+			'try_to_match': (data_received) => { this.try_to_match_local(data_received) }.bind(this),
+			'accepted': this.accepted,
+			'send_both_back_into_matching': this.send_both_back_into_matching,
+			'flag_other_user': this.flag_other_user,
+			'send_data_to_partner': this.send_data_to_partner,
+			'not_initiator_call_started': this.not_initiator_call_started
+		}
+		console.log(this.guid)
+		if(functions_dictionary.hasOwnProperty(data_received['type']))
+			functions_dictionary[data_received['type']](data_received)
 		else
 			console.log(data_received['type']+' not recognized as a function')
 	}
@@ -149,11 +147,13 @@ let server = net.createServer((socket) => {
 			// Loop over the types in order to find the correct response
 			if( data_received.hasOwnProperty('type') ){
 				let data_type = data_received['type']
-				console.log(data_received)
-				if(!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match')
+				if(!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match'){
+					console.log('this is the first time trying to connect')
 					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket)
-				else if(!clients.hasOwnProperty(data_received['id']))
+					console.log(clients[data_received['id']].latitude)
+				} else if(!clients.hasOwnProperty(data_received['id'])) {
 					return false
+				}
 				// Every type of message has an associated function.
 				// If not then it would throw an error.
 				clients[data_received['id']].execute_function(data_received)
