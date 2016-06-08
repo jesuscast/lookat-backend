@@ -36,7 +36,8 @@ def execute_message(message):
 	"""
 		Interprets the messages and decides what to do depending on the type
 	"""
-	if 'type' in message and 'id' in message:
+	print message
+	if ('type' in message) and ('id' in message):
 		# According to the funnel.js class, there are five types of messages
 		# this could receive.
 		# 'try_to_match'
@@ -45,7 +46,6 @@ def execute_message(message):
 		# 'flag_other_user'
 		#
 		# First of all I need to check if the client is tyring to joing for the first time.
-		print message
 		if message['type'] == 'try_to_match':
 			join = True
 			for client in clients:
@@ -80,6 +80,8 @@ def execute_message(message):
 			base_client.try_to_match(clients, sock)
 		elif message['type'] == 'disconnected':
 			base_client.disconnect_completely()
+	else:
+		print 'WTF'
 
 if __name__=="__main__":
 	print "RUNNING IN AN INFINITE LOOP"
