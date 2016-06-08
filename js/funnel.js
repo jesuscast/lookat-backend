@@ -110,6 +110,7 @@ var Client = function () {
 				'send_data_to_partner': this.send_data_to_partner,
 				'not_initiator_call_started': this.not_initiator_call_started
 			};
+			console.log(this.guid);
 			if (functions_dictionary.hasOwnProperty(data_received['type'])) functions_dictionary[data_received['type']](data_received);else console.log(data_received['type'] + ' not recognized as a function');
 		}
 	}], [{
