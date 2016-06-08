@@ -104,7 +104,7 @@ var Client = function () {
 				'both_accepted': Client.both_clients_accepted,
 				'clients_matched': Client.clients_matched,
 				'connection_not_accepted': Client.connection_not_accepted,
-				'try_to_match': function try_to_match(data_received) {
+				'try_to_match': function a(data_received) {
 					this.try_to_match(data_received);
 				},
 				'accepted': this.accepted,
