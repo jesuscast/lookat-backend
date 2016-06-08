@@ -60,6 +60,11 @@ var Client = function () {
 
 	_createClass(Client, [{
 		key: "try_to_match",
+
+
+		/*
+  * The following methods are made by the clients in order to communicate with the matching server.
+  */
 		value: function try_to_match(data_received) {
 			send_msg({ 'type': 'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude });
 		}
@@ -78,6 +83,11 @@ var Client = function () {
 		value: function flag_other_user(data_received) {
 			send_msg({ 'type': 'flag_other_user', 'id': tmp_guid });
 		}
+
+		/*
+  * The following methods are made by the clients in order to communicate with other client.
+  */
+
 	}, {
 		key: "send_data_to_partner",
 		value: function send_data_to_partner(data_received) {

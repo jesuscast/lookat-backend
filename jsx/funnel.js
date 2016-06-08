@@ -65,6 +65,9 @@ class Client {
 		clients[data_received['person_a']].socket.write(JSON.stringify({'type': 'connection_not_accepted', 'content': 'You have been flagged two times or more.'}));
 	}
 
+	/*
+	* The following methods are made by the clients in order to communicate with the matching server.
+	*/
 	try_to_match(data_received){
 		send_msg({'type':'try_to_match', 'id': this.guid, 'latitude': this.latitude, 'longitude': this.longitude})
 	}
@@ -81,6 +84,9 @@ class Client {
 		send_msg({'type' : 'flag_other_user', 'id':tmp_guid});
 	}
 
+	/*
+	* The following methods are made by the clients in order to communicate with other client.
+	*/
 	send_data_to_partner(data_received){
 		clients[data_received['person_b']].socket.write(JSON.stringify({'type' : 'partner_data', 'content': data_received['content']}));
 	}
