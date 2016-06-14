@@ -139,9 +139,6 @@ var Client = function () {
 	}, {
 		key: 'clients_matched',
 		value: function clients_matched(data_received) {
-			console.log('Sending messages to the clients that they matched');
-			console.log(data_received['person_a']);
-			console.log(clients[data_received['person_a']]);
 			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'clients_matched', 'content': data_received['person_b'], 'initiate': 'true' }));
 			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'clients_matched', 'content': data_received['person_a'], 'initiate': 'false' }));
 		}
@@ -191,16 +188,14 @@ var server = net.createServer(function (socket) {
 			// Loop over the types in order to find the correct response
 			if (data_received.hasOwnProperty('type')) {
 				var data_type = data_received['type'];
-				console.log(data_received);
 				if (!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match') {
 					tmp_guid = data_received['id'];
 					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket);
 				} else if (!clients.hasOwnProperty(data_received['id']) && data_received['id'] != 'MASTER_PYTHON') {
 					return false;
-				}
-				else if(!clients.hasOwnProperty(data_received['id'])) {
-				tmp_guid = data_received['id'];
-				clients[data_received['id']] = new Client(data_received['id'], '0.0', '0.0', socket);
+				} else if (!clients.hasOwnProperty(data_received['id'])) {
+					tmp_guid = data_received['id'];
+					clients[data_received['id']] = new Client(data_received['id'], '0.0', '0.0', socket);
 				}
 				// Every type of message has an associated function.
 				// If not then it would throw an error.
