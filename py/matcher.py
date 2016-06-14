@@ -18,7 +18,7 @@ server_address = ('127.0.0.1', 8124)
 print >>sys.stderr, 'connecting to %s port %s' % server_address
 sock.connect(server_address)
 
-sock.sendall(json.dumps({"type": "uuid_received", "content": " MASTER_PYTHON"}))
+sock.sendall(json.dumps({"type": "uuid_received", "content": "MASTER_PYTHON"}))
 
 
 # The maximum distance that two people are allowed to match.

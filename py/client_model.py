@@ -69,7 +69,7 @@ class Client:
 			matched_with_id = self.matched_with.id
 			self.matched_with.flag_myself()
 			self.send_both_back_into_matching()
-			sock.sendall(json.dumps({'type': 'person_was_flagged', 'person_a': matched_with_id}))
+			sock.sendall(json.dumps({'type': 'person_was_flagged', 'person_a': matched_with_id, 'id':'MASTER_PYTHON'}))
 		else:
 			print 'Base client was not matched with anybody or one or the other was not connected'
 		return True
@@ -82,7 +82,7 @@ class Client:
 		# First make sure flags exist
 		if int(redis_interface.getK(self.id, 'flags_number')) > 2:
 			print 'Connection not accepted'
-			sock.sendall({'type': 'connection_not_accepted', 'person_a': self.id})
+			sock.sendall({'type': 'connection_not_accepted', 'person_a': self.id, 'id':'MASTER_PYTHON'})
 			return True
 		for index, client in enumerate(clients):
 			if (client.id == self.id) or (client.matched_with != None) or (not client.ready_to_match):
@@ -99,7 +99,7 @@ class Client:
 			self.matched_with = matched_with
 			redis_interface.matched(matched_with.id, self.id)
 			print 'matched_with: '+str(matched_with.id)
-			sock.sendall(json.dumps({'type':'clients_matched', 'person_a': self.id, 'person_b': self.matched_with.id}))
+			sock.sendall(json.dumps({'type':'clients_matched', 'person_a': self.id, 'id':'MASTER_PYTHON', 'person_b': self.matched_with.id}))
 		else:
 			print 'Did not match with anybody'
 		return True
@@ -127,7 +127,7 @@ class Client:
 				if redis_interface.getK(self.matcehd_with.id, 'accepted'): #self.matched_with.accepted:
 					print 'Oh wow the other person accepted as well'
 					print 'Both accepted'
-					sock.sendall(json.dumps({'type':'both_accepted', 'person_a': self.id, 'person_b': self.matched_with.id}))
+					sock.sendall(json.dumps({'type':'both_accepted', 'id':'MASTER_PYTHON', 'person_a': self.id, 'person_b': self.matched_with.id}))
 				print 'accepted: '+self.id
 			else:
 				print 'This does not seem correct. Matched with is not matched with base client.'
