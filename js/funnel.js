@@ -230,6 +230,7 @@ app.listen(8124);
 
 io.sockets.on('connection', function (socket) {
 	var tmp_guid = '';
+	console.log('connection received');
 	socket.emit('connection_received', { 'content': 'nothing' });
 	socket.on('data_from_client', function (data) {
 		data_type = data_received['type'];
