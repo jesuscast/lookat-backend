@@ -4,7 +4,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-/**
+/*
 * Connection and redis libraries
 */
 var net = require('net');
@@ -161,51 +161,67 @@ var Client = function () {
 * Socket Server Entry Point
 */
 
+/*
+let server = net.createServer((socket) => {
+	let tmp_guid = ''
 
-var server = net.createServer(function (socket) {
-	var tmp_guid = '';
+	socket.on('end', () => {
+		send_msg({'type':'disconnected', 'id': tmp_guid})
+		delete clients[tmp_guid]
+	})
 
-	socket.on('end', function () {
-		send_msg({ 'type': 'disconnected', 'id': tmp_guid });
-		delete clients[tmp_guid];
-	});
-
-	socket.on('data', function (data) {
-		var string_of_data = data.toString();
+	socket.on('data', (data) => {
+		console.log(string_of_data)
+		let string_of_data = data.toString()
 		// Check if there are multiple messages bundled together.
-		var array_of_messages = [];
-		if (string_of_data.indexOf('}{') != -1) {
-			array_of_messages = string_of_data.split('}{');
-			for (var i = 0; i < array_of_messages.length; i++) {
-				if (i > 0) array_of_messages[i] = '{' + array_of_messages[i];
-				if (i < array_of_messages.length - 1) array_of_messages[i] += '}';
+		let array_of_messages = []
+		if(string_of_data.indexOf('}{') != -1) {
+			array_of_messages = string_of_data.split('}{')
+			for(let i = 0; i < array_of_messages.length; i++) {
+				if(i > 0)
+					array_of_messages[i] = '{' + array_of_messages[i]
+				if(i < (array_of_messages.length - 1))
+					array_of_messages[i] += '}'
 			}
 		} else {
-			array_of_messages.push(string_of_data);
+			array_of_messages.push(string_of_data)
 		}
-		for (var _i = 0; _i < array_of_messages.length; _i++) {
-			console.log(array_of_messages[_i]);
-			var data_received = JSON.parse(array_of_messages[_i]);
+		for(let i = 0; i < array_of_messages.length; i++) {
+			// console.log(array_of_messages[i])
+			let data_received = JSON.parse(array_of_messages[i])
 			// Loop over the types in order to find the correct response
-			if (data_received.hasOwnProperty('type')) {
-				var data_type = data_received['type'];
-				if (!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match') {
-					tmp_guid = data_received['id'];
-					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket);
+			if( data_received.hasOwnProperty('type') ){
+				let data_type = data_received['type']
+				if(!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match'){
+					tmp_guid = data_received['id']
+					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket)
 				} else if (!clients.hasOwnProperty(data_received['id']) && data_received['id'] != 'MASTER_PYTHON') {
 					return false;
-				} else if (!clients.hasOwnProperty(data_received['id'])) {
+				} else if(!clients.hasOwnProperty(data_received['id'])) {
 					tmp_guid = data_received['id'];
 					clients[data_received['id']] = new Client(data_received['id'], '0.0', '0.0', socket);
 				}
 				// Every type of message has an associated function.
 				// If not then it would throw an error.
-				clients[data_received['id']].execute_function(data_received);
+				clients[data_received['id']].execute_function(data_received)
 			} //end of if
 		} // end of for
-	}); // End of data listener
-}).listen(8124);
+	}) // End of data listener
+}).listen(8124)
 
-/**
+*/
+
+var io = require('socket.io').listen(8124);
+
+io.sockets.on('connection', function (socket) {
+
+	socket.emit('news', { hello: 'world' });
+	socket.on('my other event', function (data) {
+		console.log(data);
+	});
+});
+
+/*
 * Author: Jesus Andres Castaneda Sosa, 2016
+
 */

@@ -1,4 +1,4 @@
-*
+/*
 * Connection and redis libraries
 */
 const net = require('net')
@@ -117,6 +117,8 @@ class Client {
 /**
 * Socket Server Entry Point
 */
+
+/*
 let server = net.createServer((socket) => {
 	let tmp_guid = ''
 
@@ -164,7 +166,20 @@ let server = net.createServer((socket) => {
 	}) // End of data listener
 }).listen(8124)
 
+*/
+
+var io = require('socket.io').listen(8124);
+
+io.sockets.on('connection', function (socket) {
+
+	socket.emit('news', { hello: 'world' });
+    socket.on('my other event', function (data) {
+        console.log(data);
+    });
+});
 
 
-/**
+/*
 * Author: Jesus Andres Castaneda Sosa, 2016
+
+*/
