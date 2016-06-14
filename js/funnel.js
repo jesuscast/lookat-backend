@@ -41,6 +41,35 @@ var Client = function () {
 		this.longitude = longitude;
 		this.latitude = latitude;
 		this.socket = socket;
+		this.functions_dictionary = {
+			'both_accepted': function a(data_received) {
+				Client.both_clients_accepted(data_received);
+			}.bind(this),
+			'clients_matched': function b(data_received) {
+				Client.clients_matched(data_received);
+			}.bind(this),
+			'connection_not_accepted': function c(data_received) {
+				Client.connection_not_accepted(data_received);
+			}.bind(this),
+			'try_to_match': function d(data_received) {
+				this.try_to_match_local(data_received);
+			}.bind(this),
+			'accepted': function e(data_received) {
+				this.accepted(data_received);
+			}.bind(this),
+			'send_both_back_into_matching': function f(data_received) {
+				this.send_both_back_into_matching(data_received);
+			}.bind(this),
+			'flag_other_user': function g(data_received) {
+				this.flag_other_user(data_received);
+			}.bind(this),
+			'send_data_to_partner': function h(data_received) {
+				this.send_data_to_partner(data_received);
+			}.bind(this),
+			'not_initiator_call_started': function i(data_received) {
+				this.not_initiator_call_started(data_received);
+			}.bind(this)
+		};
 	}
 
 	/*
@@ -99,36 +128,7 @@ var Client = function () {
 	}, {
 		key: 'execute_function',
 		value: function execute_function(data_received) {
-			var functions_dictionary = {
-				'both_accepted': function a(data_received) {
-					Client.both_clients_accepted(data_received);
-				}.bind(this),
-				'clients_matched': function b(data_received) {
-					Client.clients_matched(data_received);
-				}.bind(this),
-				'connection_not_accepted': function c(data_received) {
-					Client.connection_not_accepted(data_received);
-				}.bind(this),
-				'try_to_match': function d(data_received) {
-					this.try_to_match_local(data_received);
-				}.bind(this),
-				'accepted': function e(data_received) {
-					this.accepted(data_received);
-				}.bind(this),
-				'send_both_back_into_matching': function f(data_received) {
-					this.send_both_back_into_matching(data_received);
-				}.bind(this),
-				'flag_other_user': function g(data_received) {
-					this.flag_other_user(data_received);
-				}.bind(this),
-				'send_data_to_partner': function h(data_received) {
-					this.send_data_to_partner(data_received);
-				}.bind(this),
-				'not_initiator_call_started': function i(data_received) {
-					this.not_initiator_call_started(data_received);
-				}.bind(this)
-			};
-			if (functions_dictionary.hasOwnProperty(data_received['type'])) functions_dictionary[data_received['type']](data_received);else console.log(data_received['type'] + ' not recognized as a function');
+			if (this.functions_dictionary.hasOwnProperty(data_received['type'])) this.functions_dictionary[data_received['type']](data_received);else console.log(data_received['type'] + ' not recognized as a function');
 		}
 	}], [{
 		key: 'both_clients_accepted',
