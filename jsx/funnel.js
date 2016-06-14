@@ -142,7 +142,7 @@ let server = net.createServer((socket) => {
 		}
 		for(let i = 0; i < array_of_messages.length; i++) {
 			console.log(array_of_messages[i])
-			let data_received = JSON.parse(array_of_messages[i].replace(/\\\\r/g, " ").replace(/\\\\n/g, " ").replace(/\n/g," ").replace(/\r/g, " "))
+			let data_received = JSON.parse(array_of_messages[i])
 			// Loop over the types in order to find the correct response
 			if( data_received.hasOwnProperty('type') ){
 				let data_type = data_received['type']
