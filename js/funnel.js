@@ -186,22 +186,22 @@ var server = net.createServer(function (socket) {
 		}
 		for (var _i = 0; _i < array_of_messages.length; _i++) {
 			// console.log(array_of_messages[i])
-			var _data_received = JSON.parse(array_of_messages[_i]);
+			var data_received = JSON.parse(array_of_messages[_i]);
 			// Loop over the types in order to find the correct response
-			if (_data_received.hasOwnProperty('type')) {
-				var _data_type = _data_received['type'];
-				if (!clients.hasOwnProperty(_data_received['id']) && _data_type == 'try_to_match') {
-					tmp_guid = _data_received['id'];
-					clients[_data_received['id']] = new Client(_data_received['id'], _data_received['longitude'], _data_received['latitude'], socket);
-				} else if (!clients.hasOwnProperty(_data_received['id']) && _data_received['id'] != 'MASTER_PYTHON') {
+			if (data_received.hasOwnProperty('type')) {
+				var _data_type = data_received['type'];
+				if (!clients.hasOwnProperty(data_received['id']) && _data_type == 'try_to_match') {
+					tmp_guid = data_received['id'];
+					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket);
+				} else if (!clients.hasOwnProperty(data_received['id']) && data_received['id'] != 'MASTER_PYTHON') {
 					return false;
-				} else if (!clients.hasOwnProperty(_data_received['id'])) {
-					tmp_guid = _data_received['id'];
-					clients[_data_received['id']] = new Client(_data_received['id'], '0.0', '0.0', socket);
+				} else if (!clients.hasOwnProperty(data_received['id'])) {
+					tmp_guid = data_received['id'];
+					clients[data_received['id']] = new Client(data_received['id'], '0.0', '0.0', socket);
 				}
 				// Every type of message has an associated function.
 				// If not then it would throw an error.
-				clients[_data_received['id']].execute_function(_data_received);
+				clients[data_received['id']].execute_function(data_received);
 			} //end of if
 		} // end of for
 	}); // End of data listener
@@ -232,7 +232,7 @@ io.sockets.on('connection', function (socket) {
 	var tmp_guid = '';
 	console.log('connection received');
 	socket.emit('connection_received', { 'content': 'nothing' });
-	socket.on('data_from_client', function (data) {
+	socket.on('data_from_client', function (data_received) {
 		data_type = data_received['type'];
 		if (!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match') {
 			tmp_guid = data_received['id'];

@@ -192,7 +192,7 @@ io.sockets.on('connection', function (socket) {
 	let tmp_guid = ''
 	console.log('connection received')
 	socket.emit('connection_received', {'content':'nothing'})
-	socket.on('data_from_client', function(data){
+	socket.on('data_from_client', function(data_received){
 		data_type = data_received['type']
 		if(!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match'){
 			tmp_guid = data_received['id']
