@@ -142,8 +142,8 @@ var Client = function () {
 			console.log('Sending messages to the clients that they matched');
 			console.log(data_received['person_a']);
 			console.log(clients[data_received['person_a']]);
-			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'matched_with', 'content': data_received['person_b'], 'initiate': 'true' }));
-			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'matched_with', 'content': data_received['person_a'], 'initiate': 'false' }));
+			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'clients_matched', 'content': data_received['person_b'], 'initiate': 'true' }));
+			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'clients_matched', 'content': data_received['person_a'], 'initiate': 'false' }));
 		}
 	}, {
 		key: 'connection_not_accepted',

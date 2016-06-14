@@ -60,8 +60,8 @@ class Client {
 	}
 
 	static clients_matched(data_received){
-		clients[data_received['person_a']].socket.write(JSON.stringify({'type':'matched_with', 'content': data_received['person_b'], 'initiate': 'true'}));
-		clients[data_received['person_b']].socket.write(JSON.stringify({'type':'matched_with', 'content': data_received['person_a'], 'initiate': 'false'}));
+		clients[data_received['person_a']].socket.write(JSON.stringify({'type':'clients_matched', 'content': data_received['person_b'], 'initiate': 'true'}));
+		clients[data_received['person_b']].socket.write(JSON.stringify({'type':'clients_matched', 'content': data_received['person_a'], 'initiate': 'false'}));
 	}
 
 	static connection_not_accepted(data_received){
@@ -148,8 +148,11 @@ let server = net.createServer((socket) => {
 				if(!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match'){
 					tmp_guid = data_received['id']
 					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket)
+				} else if (!clients.hasOwnProperty(data_received['id']) && data_received['id'] != 'MASTER_PYTHON') {
+					return false;
 				} else if(!clients.hasOwnProperty(data_received['id'])) {
-					return false
+					tmp_guid = data_received['id'];
+					clients[data_received['id']] = new Client(data_received['id'], '0.0', '0.0', socket);
 				}
 				// Every type of message has an associated function.
 				// If not then it would throw an error.
