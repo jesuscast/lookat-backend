@@ -194,7 +194,7 @@ io.sockets.on('connection', function (socket) {
 	socket.emit('connection_received', {'content':'nothing'})
 	socket.on('data_from_client', function(data_received){
 		console.log('data received')
-		data_type = data_received['type']
+		let data_type = data_received['type']
 		if(!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match'){
 			tmp_guid = data_received['id']
 			clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket)

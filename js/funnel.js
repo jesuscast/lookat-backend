@@ -189,8 +189,8 @@ var server = net.createServer(function (socket) {
 			var data_received = JSON.parse(array_of_messages[_i]);
 			// Loop over the types in order to find the correct response
 			if (data_received.hasOwnProperty('type')) {
-				var _data_type = data_received['type'];
-				if (!clients.hasOwnProperty(data_received['id']) && _data_type == 'try_to_match') {
+				var data_type = data_received['type'];
+				if (!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match') {
 					tmp_guid = data_received['id'];
 					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket);
 				} else if (!clients.hasOwnProperty(data_received['id']) && data_received['id'] != 'MASTER_PYTHON') {
@@ -234,7 +234,7 @@ io.sockets.on('connection', function (socket) {
 	socket.emit('connection_received', { 'content': 'nothing' });
 	socket.on('data_from_client', function (data_received) {
 		console.log('data received');
-		data_type = data_received['type'];
+		var data_type = data_received['type'];
 		if (!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match') {
 			tmp_guid = data_received['id'];
 			clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket);
