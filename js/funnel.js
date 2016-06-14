@@ -184,6 +184,7 @@ var server = net.createServer(function (socket) {
 			array_of_messages.push(string_of_data);
 		}
 		for (var _i = 0; _i < array_of_messages.length; _i++) {
+			console.log(array_of_messages[_i]);
 			var data_received = JSON.parse(array_of_messages[_i].replace(/\\\\r/g, " ").replace(/\\\\n/g, " ").replace(/\n/g, " ").replace(/\r/g, " "));
 			// Loop over the types in order to find the correct response
 			if (data_received.hasOwnProperty('type')) {
