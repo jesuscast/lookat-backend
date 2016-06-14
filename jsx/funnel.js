@@ -15,7 +15,6 @@ let send_msg = (msg) => {
 	redis_client.multi()
 		.rpush('messages', JSON.stringify(msg))
 		.exec(function (err, results) {
-
 	})
 }
 
@@ -55,21 +54,21 @@ class Client {
 	* client.
 	*/
 	static both_clients_accepted(data_received){
-		clients[data_received['person_a']].socket.write(JSON.stringify({'type':'both_accepted'}));
-		clients[data_received['person_b']].socket.write(JSON.stringify({'type':'both_accepted'}));
+		clients[data_received['person_a']].socket.emit('data_received',{'type':'both_accepted'});
+		clients[data_received['person_b']].socket.emit('data_received',{'type':'both_accepted'});
 	}
 
 	static clients_matched(data_received){
-		clients[data_received['person_a']].socket.write(JSON.stringify({'type':'clients_matched', 'content': data_received['person_b'], 'initiate': 'true'}));
-		clients[data_received['person_b']].socket.write(JSON.stringify({'type':'clients_matched', 'content': data_received['person_a'], 'initiate': 'false'}));
+		clients[data_received['person_a']].socket.emit('data_received',{'type':'clients_matched', 'content': data_received['person_b'], 'initiate': 'true'});
+		clients[data_received['person_b']].socket.emit('data_received',{'type':'clients_matched', 'content': data_received['person_a'], 'initiate': 'false'});
 	}
 
 	static connection_not_accepted(data_received){
-		clients[data_received['person_a']].socket.write(JSON.stringify({'type': 'connection_not_accepted', 'content': 'You have been flagged two times or more.'}));
+		clients[data_received['person_a']].socket.emit('data_received', {'type': 'connection_not_accepted', 'content': 'You have been flagged two times or more.'});
 	}
 
 	static person_was_flagged(data_received){
-		clients[data_received['person_a']].socket.write(JSON.stringify({'type': 'person_was_flagged', 'content' : 'You have been flagged'}));
+		clients[data_received['person_a']].socket.emit('data_received', {'type': 'person_was_flagged', 'content' : 'You have been flagged'});
 	}
 
 	/*
@@ -96,11 +95,11 @@ class Client {
 	* The following methods are used by the clients in order to communicate with other client.
 	*/
 	send_data_to_partner(data_received){
-		clients[data_received['person_b']].socket.write(JSON.stringify({'type' : 'partner_data', 'content': data_received['content']}));
+		clients[data_received['person_b']].socket.emit('data_received',{'type' : 'partner_data', 'content': data_received['content']});
 	}
 
 	not_initiator_call_started(data_received){
-		clients[data_received['person_b']].socket.write(JSON.stringify({'type' : 'call_now'}));
+		clients[data_received['person_b']].socket.emit('data_received',{'type' : 'call_now'});
 	}
 
 	/*
@@ -115,10 +114,8 @@ class Client {
 }
 
 /**
-* Socket Server Entry Point
+* Entry point for python socket.
 */
-
-/*
 let server = net.createServer((socket) => {
 	let tmp_guid = ''
 
@@ -164,10 +161,12 @@ let server = net.createServer((socket) => {
 			} //end of if
 		} // end of for
 	}) // End of data listener
-}).listen(8124)
+}).listen(8123)
 
+
+/**
+* Entry point for device connections.
 */
-
 let app = require('http').createServer(handler)
 
 function handler (req, res) {
@@ -190,15 +189,27 @@ app.listen(8124);
 
 
 io.sockets.on('connection', function (socket) {
-
-	socket.emit('news', { hello: 'world' });
-    socket.on('my other event', function (data) {
-        console.log(data);
-    });
+	let tmp_guid = ''
+	socket.emit('connection_received', {'content':'nothing'})
+	socket.on('data_from_client', function(data){
+		data_type = data_received['type']
+		if(!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match'){
+			tmp_guid = data_received['id']
+			clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket)
+		} else if (!clients.hasOwnProperty(data_received['id']) && data_received['id'] != 'MASTER_PYTHON') {
+			return false;
+		} else if(!clients.hasOwnProperty(data_received['id'])) {
+			tmp_guid = data_received['id'];
+			clients[data_received['id']] = new Client(data_received['id'], '0.0', '0.0', socket);
+		}
+		clients[data_received['id']].execute_function(data_received)
+	})
+	socket.on('disconnect', function() {
+		send_msg({'type':'disconnected', 'id': tmp_guid})
+		delete clients[tmp_guid]
+	})
 });
-
 
 /*
 * Author: Jesus Andres Castaneda Sosa, 2016
-
 */

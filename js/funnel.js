@@ -113,12 +113,12 @@ var Client = function () {
 	}, {
 		key: 'send_data_to_partner',
 		value: function send_data_to_partner(data_received) {
-			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'partner_data', 'content': data_received['content'] }));
+			clients[data_received['person_b']].socket.emit('data_received', { 'type': 'partner_data', 'content': data_received['content'] });
 		}
 	}, {
 		key: 'not_initiator_call_started',
 		value: function not_initiator_call_started(data_received) {
-			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'call_now' }));
+			clients[data_received['person_b']].socket.emit('data_received', { 'type': 'call_now' });
 		}
 
 		/*
@@ -133,24 +133,24 @@ var Client = function () {
 	}], [{
 		key: 'both_clients_accepted',
 		value: function both_clients_accepted(data_received) {
-			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'both_accepted' }));
-			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'both_accepted' }));
+			clients[data_received['person_a']].socket.emit('data_received', { 'type': 'both_accepted' });
+			clients[data_received['person_b']].socket.emit('data_received', { 'type': 'both_accepted' });
 		}
 	}, {
 		key: 'clients_matched',
 		value: function clients_matched(data_received) {
-			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'clients_matched', 'content': data_received['person_b'], 'initiate': 'true' }));
-			clients[data_received['person_b']].socket.write(JSON.stringify({ 'type': 'clients_matched', 'content': data_received['person_a'], 'initiate': 'false' }));
+			clients[data_received['person_a']].socket.emit('data_received', { 'type': 'clients_matched', 'content': data_received['person_b'], 'initiate': 'true' });
+			clients[data_received['person_b']].socket.emit('data_received', { 'type': 'clients_matched', 'content': data_received['person_a'], 'initiate': 'false' });
 		}
 	}, {
 		key: 'connection_not_accepted',
 		value: function connection_not_accepted(data_received) {
-			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'connection_not_accepted', 'content': 'You have been flagged two times or more.' }));
+			clients[data_received['person_a']].socket.emit('data_received', { 'type': 'connection_not_accepted', 'content': 'You have been flagged two times or more.' });
 		}
 	}, {
 		key: 'person_was_flagged',
 		value: function person_was_flagged(data_received) {
-			clients[data_received['person_a']].socket.write(JSON.stringify({ 'type': 'person_was_flagged', 'content': 'You have been flagged' }));
+			clients[data_received['person_a']].socket.emit('data_received', { 'type': 'person_was_flagged', 'content': 'You have been flagged' });
 		}
 	}]);
 
@@ -158,59 +158,58 @@ var Client = function () {
 }();
 
 /**
-* Socket Server Entry Point
+* Entry point for python socket.
 */
 
-/*
-let server = net.createServer((socket) => {
-	let tmp_guid = ''
 
-	socket.on('end', () => {
-		send_msg({'type':'disconnected', 'id': tmp_guid})
-		delete clients[tmp_guid]
-	})
+var server = net.createServer(function (socket) {
+	var tmp_guid = '';
 
-	socket.on('data', (data) => {
-		console.log(string_of_data)
-		let string_of_data = data.toString()
+	socket.on('end', function () {
+		send_msg({ 'type': 'disconnected', 'id': tmp_guid });
+		delete clients[tmp_guid];
+	});
+
+	socket.on('data', function (data) {
+		console.log(string_of_data);
+		var string_of_data = data.toString();
 		// Check if there are multiple messages bundled together.
-		let array_of_messages = []
-		if(string_of_data.indexOf('}{') != -1) {
-			array_of_messages = string_of_data.split('}{')
-			for(let i = 0; i < array_of_messages.length; i++) {
-				if(i > 0)
-					array_of_messages[i] = '{' + array_of_messages[i]
-				if(i < (array_of_messages.length - 1))
-					array_of_messages[i] += '}'
+		var array_of_messages = [];
+		if (string_of_data.indexOf('}{') != -1) {
+			array_of_messages = string_of_data.split('}{');
+			for (var i = 0; i < array_of_messages.length; i++) {
+				if (i > 0) array_of_messages[i] = '{' + array_of_messages[i];
+				if (i < array_of_messages.length - 1) array_of_messages[i] += '}';
 			}
 		} else {
-			array_of_messages.push(string_of_data)
+			array_of_messages.push(string_of_data);
 		}
-		for(let i = 0; i < array_of_messages.length; i++) {
+		for (var _i = 0; _i < array_of_messages.length; _i++) {
 			// console.log(array_of_messages[i])
-			let data_received = JSON.parse(array_of_messages[i])
+			var _data_received = JSON.parse(array_of_messages[_i]);
 			// Loop over the types in order to find the correct response
-			if( data_received.hasOwnProperty('type') ){
-				let data_type = data_received['type']
-				if(!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match'){
-					tmp_guid = data_received['id']
-					clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket)
-				} else if (!clients.hasOwnProperty(data_received['id']) && data_received['id'] != 'MASTER_PYTHON') {
+			if (_data_received.hasOwnProperty('type')) {
+				var _data_type = _data_received['type'];
+				if (!clients.hasOwnProperty(_data_received['id']) && _data_type == 'try_to_match') {
+					tmp_guid = _data_received['id'];
+					clients[_data_received['id']] = new Client(_data_received['id'], _data_received['longitude'], _data_received['latitude'], socket);
+				} else if (!clients.hasOwnProperty(_data_received['id']) && _data_received['id'] != 'MASTER_PYTHON') {
 					return false;
-				} else if(!clients.hasOwnProperty(data_received['id'])) {
-					tmp_guid = data_received['id'];
-					clients[data_received['id']] = new Client(data_received['id'], '0.0', '0.0', socket);
+				} else if (!clients.hasOwnProperty(_data_received['id'])) {
+					tmp_guid = _data_received['id'];
+					clients[_data_received['id']] = new Client(_data_received['id'], '0.0', '0.0', socket);
 				}
 				// Every type of message has an associated function.
 				// If not then it would throw an error.
-				clients[data_received['id']].execute_function(data_received)
+				clients[_data_received['id']].execute_function(_data_received);
 			} //end of if
 		} // end of for
-	}) // End of data listener
-}).listen(8124)
+	}); // End of data listener
+}).listen(8123);
 
+/**
+* Entry point for device connections.
 */
-
 var app = require('http').createServer(handler);
 
 function handler(req, res) {
@@ -230,14 +229,27 @@ var io = require('socket.io')(app);
 app.listen(8124);
 
 io.sockets.on('connection', function (socket) {
-
-	socket.emit('news', { hello: 'world' });
-	socket.on('my other event', function (data) {
-		console.log(data);
+	var tmp_guid = '';
+	socket.emit('connection_received', { 'content': 'nothing' });
+	socket.on('data_from_client', function (data) {
+		data_type = data_received['type'];
+		if (!clients.hasOwnProperty(data_received['id']) && data_type == 'try_to_match') {
+			tmp_guid = data_received['id'];
+			clients[data_received['id']] = new Client(data_received['id'], data_received['longitude'], data_received['latitude'], socket);
+		} else if (!clients.hasOwnProperty(data_received['id']) && data_received['id'] != 'MASTER_PYTHON') {
+			return false;
+		} else if (!clients.hasOwnProperty(data_received['id'])) {
+			tmp_guid = data_received['id'];
+			clients[data_received['id']] = new Client(data_received['id'], '0.0', '0.0', socket);
+		}
+		clients[data_received['id']].execute_function(data_received);
+	});
+	socket.on('disconnect', function () {
+		send_msg({ 'type': 'disconnected', 'id': tmp_guid });
+		delete clients[tmp_guid];
 	});
 });
 
 /*
 * Author: Jesus Andres Castaneda Sosa, 2016
-
 */
