@@ -1,4 +1,4 @@
-/**
+*
 * Connection and redis libraries
 */
 const net = require('net')
@@ -126,6 +126,7 @@ let server = net.createServer((socket) => {
 	})
 
 	socket.on('data', (data) => {
+		console.log(string_of_data)
 		let string_of_data = data.toString()
 		// Check if there are multiple messages bundled together.
 		let array_of_messages = []
@@ -141,7 +142,7 @@ let server = net.createServer((socket) => {
 			array_of_messages.push(string_of_data)
 		}
 		for(let i = 0; i < array_of_messages.length; i++) {
-			console.log(array_of_messages[i])
+			// console.log(array_of_messages[i])
 			let data_received = JSON.parse(array_of_messages[i])
 			// Loop over the types in order to find the correct response
 			if( data_received.hasOwnProperty('type') ){
@@ -167,4 +168,3 @@ let server = net.createServer((socket) => {
 
 /**
 * Author: Jesus Andres Castaneda Sosa, 2016
-*/
