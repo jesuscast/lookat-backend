@@ -211,7 +211,11 @@ let server = net.createServer((socket) => {
 
 */
 
-var io = require('socket.io').listen(8124);
+var app = require('http').createServer(handler);
+
+var io = require('socket.io')(app);
+
+app.listen(8124);
 
 io.sockets.on('connection', function (socket) {
 
