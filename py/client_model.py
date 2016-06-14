@@ -58,7 +58,7 @@ class Client:
 		matched_with = self.matched_with
 		if matched_with:
 			matched_with.disconnect()
-			matched_with.ready_to_match()
+			matched_with.ready_to_match_f()
 		self.disconnect()
 		return True
 	def flag_other_user(self, sock):
@@ -110,7 +110,7 @@ class Client:
 		matched_with = self.matched_with
 		# Set for the matched with guy.
 		matched_with.disconnect()
-		matched_with.ready_to_match()
+		matched_with.ready_to_match_f()
 		# Set up for myself.
 		self.disconnect()
 		self.ready_to_match_f()
