@@ -124,7 +124,7 @@ class Client:
 			if self.matched_with.matched_with == self:
 				print 'Everything seems correct'
 				redis_interface.accepted(self.id)
-				if redis_interface.getK(self.matcehd_with.id, 'accepted'): #self.matched_with.accepted:
+				if redis_interface.getK(self.matched_with.id, 'accepted'): #self.matched_with.accepted:
 					print 'Oh wow the other person accepted as well'
 					print 'Both accepted'
 					sock.sendall(json.dumps({'type':'both_accepted', 'id':'MASTER_PYTHON', 'person_a': self.id, 'person_b': self.matched_with.id}))
