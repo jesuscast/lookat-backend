@@ -115,7 +115,7 @@ class Client:
 		self.disconnect()
 		self.ready_to_match_f()
 		return True
-	def accepted(self, sock):
+	def accepted_f(self, sock):
 		"""
 			Sets values for this client to accept the conversation.
 			If the other client accepted too then send a socket request
